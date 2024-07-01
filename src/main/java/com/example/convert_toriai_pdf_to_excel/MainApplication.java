@@ -14,7 +14,7 @@ public class MainApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         // Tạo đối tượng Image từ file ảnh (đảm bảo file ảnh nằm trong thư mục resources)
-        Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/com/example/convert_toriai_from_pdf_to_chl/ICON/LOGO_CHL.png")));
+        Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/com/example/convert_toriai_pdf_to_excel/ICON/LOGO_CHL.png")));
         // Thiết lập biểu tượng cho Stage
         stage.getIcons().add(icon);
 
