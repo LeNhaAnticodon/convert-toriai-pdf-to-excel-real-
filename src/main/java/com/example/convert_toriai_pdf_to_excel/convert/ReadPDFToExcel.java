@@ -1,6 +1,6 @@
-package com.example.convert_toriai_from_pdf_to_chl.convert;
+package com.example.convert_toriai_pdf_to_excel.convert;
 
-import com.example.convert_toriai_from_pdf_to_chl.model.CsvFile;
+import com.example.convert_toriai_pdf_to_excel.model.CsvFile;
 import com.opencsv.CSVWriter;
 import javafx.collections.ObservableList;
 import org.apache.pdfbox.pdmodel.PDDocument;

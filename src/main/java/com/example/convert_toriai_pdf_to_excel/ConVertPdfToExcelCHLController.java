@@ -1,8 +1,8 @@
-package com.example.convert_toriai_from_pdf_to_chl;
+package com.example.convert_toriai_pdf_to_excel;
 
-import com.example.convert_toriai_from_pdf_to_chl.convert.ReadPDFToExcel;
-import com.example.convert_toriai_from_pdf_to_chl.dao.SetupData;
-import com.example.convert_toriai_from_pdf_to_chl.model.CsvFile;
+import com.example.convert_toriai_pdf_to_excel.convert.ReadPDFToExcel;
+import com.example.convert_toriai_pdf_to_excel.dao.SetupData;
+import com.example.convert_toriai_pdf_to_excel.model.CsvFile;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -22,6 +22,8 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
@@ -32,10 +34,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
-
-import javafx.scene.image.Image;
-
-import javafx.scene.image.ImageView;
 
 import java.awt.*;
 import java.io.File;

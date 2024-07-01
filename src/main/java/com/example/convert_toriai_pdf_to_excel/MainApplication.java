@@ -1,6 +1,6 @@
-package com.example.convert_toriai_from_pdf_to_chl;
+package com.example.convert_toriai_pdf_to_excel;
 
-import com.example.convert_toriai_from_pdf_to_chl.dao.SetupData;
+import com.example.convert_toriai_pdf_to_excel.dao.SetupData;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

@@ -5,9 +5,40 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5734567a-e4af-4e7b-81ff-9c217d4afa27" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/module-info.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/module-info.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/hello-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/hello-view.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dictionaries" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mvnw" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mvnw.cmd" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/AboutController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/ConVertPdfToExcelCHLController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/Main.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/MainApplication.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/dao/SetupData.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/model/CsvFile.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/model/Setup.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/module-info.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/3d WorkingPeople ConstructionWorker.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/C.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/CA.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/FB.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/H.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/L.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/L2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/LOGO_CHL.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/P.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/U.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/UC.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/ICON/ok.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/about.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/convertPdfToExcelCHL.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/languagesMap.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,10 +66,39 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "C:/Users/HuanTech PC/IdeaProjects/convert toriai pdf to excel/src/main/resources",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\HuanTech PC\IdeaProjects\convert toriai pdf to excel\src\main\resources" />
+      <recent name="C:\Users\HuanTech PC\IdeaProjects\convert toriai pdf to excel\src\main\resources\com\example\convert_toriai_pdf_to_excel" />
+      <recent name="C:\Users\HuanTech PC\IdeaProjects\convert toriai pdf to excel\src\main\java\com\example\convert_toriai_pdf_to_excel" />
+      <recent name="C:\Users\HuanTech PC\IdeaProjects\convert toriai pdf to excel\src\main\java" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="convert toriai pdf to excel" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="convert toriai pdf to excel" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -47,8 +107,23 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1719819802645</updated>
-      <workItem from="1719819804016" duration="7000" />
+      <workItem from="1719819804016" duration="32000" />
+      <workItem from="1719819845359" duration="904000" />
     </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

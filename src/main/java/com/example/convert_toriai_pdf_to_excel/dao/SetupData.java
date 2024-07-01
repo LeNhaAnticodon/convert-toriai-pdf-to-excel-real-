@@ -1,7 +1,7 @@
-package com.example.convert_toriai_from_pdf_to_chl.dao;
+package com.example.convert_toriai_pdf_to_excel.dao;
 
-import com.example.convert_toriai_from_pdf_to_chl.model.CsvFile;
-import com.example.convert_toriai_from_pdf_to_chl.model.Setup;
+import com.example.convert_toriai_pdf_to_excel.model.CsvFile;
+import com.example.convert_toriai_pdf_to_excel.model.Setup;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
