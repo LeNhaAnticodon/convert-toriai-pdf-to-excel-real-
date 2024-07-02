@@ -137,8 +137,9 @@ public class ReadPDFToExcel {
                 System.out.println("Xóa file thất bại.");
             }
         }
+        // path chứa địa chỉ file sẽ được dán từ file copy
         Path copyFile = Paths.get(excelPath);
-        // Đọc file mẫu từ resources
+        // Đọc file mẫu từ resources rồi copy file ra địa chỉ của copyFile
         try (InputStream sourceFile = ReadPDFToExcel.class.getResourceAsStream("/com/example/convert_toriai_pdf_to_excel/sampleFiles/sample files.xlsx")) {
             if (sourceFile == null) {
                 throw new IOException("File mẫu không tồn tại trong JAR ứng dụng");
@@ -147,6 +148,7 @@ public class ReadPDFToExcel {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        // thêm tên file vào list các sheet của file để hiển thị tên file
         csvFileNames.add(new CsvFile("EXCEL: " + fileExcelName + ".xlsx", "", 0, 0));
 /*        // Đặt quyền chỉ đọc cho file
         File readOnly = new File(excelPath);
@@ -161,7 +163,7 @@ public class ReadPDFToExcel {
             System.out.println("File does not exist.");
         }*/
 
-        // lặp qua từng loại vật liệu trong list và ghi chúng vào các file chl
+        // lặp qua từng loại vật liệu trong list và ghi chúng vào các file excel
         for (int i = 1; i < kakuKouSyuList.size(); i++) {
             // tách các đoạn bozai thành mảng
             String[] kakuKakou = kakuKouSyuList.get(i).split("加工No:");
@@ -218,7 +220,7 @@ public class ReadPDFToExcel {
     private static void getHeaderData(String header) {
         String nouKi = extractValue(header, "期[", "]");
         String[] nouKiArr = nouKi.split("/");
-        shortNouKi = nouKiArr[1] + "/" + nouKiArr[2];
+        shortNouKi = nouKiArr[0] + nouKiArr[1] + nouKiArr[2];
 
         kouJiMe = extractValue(header, "考[", "]");
         kyakuSakiMei = extractValue(header, "客先名[", "]");
@@ -993,111 +995,117 @@ public class ReadPDFToExcel {
 
     private static void writeDataToExcelToriai(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int sheetIndex, ObservableList<CsvFile> csvFileNames) throws FileNotFoundException {
 
+        // tạo luồng đọc ghi file
         try (FileInputStream file = new FileInputStream(excelPath)) {
             Workbook workbook = new XSSFWorkbook(file);
 
+            // nếu tên vật liệu có chứa [ thì phải đổi sang U vì tên này sẽ đặt tên cho sheet nên [ không dùng được
             if (kouSyu.contains("[")) {
                 kouSyu = kouSyu.replace("[", "U");
             }
 
-            // Lấy sheet gốc cần sao chép
-            int sheetSampleIndex = 0; // Thay đổi thành chỉ số của sheet cần sao chép
-            Sheet sheet = workbook.cloneSheet(sheetSampleIndex);
+            // Lấy index sheet gốc cần sao chép
+            int sheetSampleIndex = 0;
+            // sao chép sheet gốc sang một sheet mới
+            workbook.cloneSheet(sheetSampleIndex);
+            // đổi tên sheet mới theo tên vật liệu đang duyệt, sheetIndex là chỉ số của sheet mới
             workbook.setSheetName(sheetIndex, kouSyu);
-            // Khóa sheet với mật khẩu
-//            sheet.protectSheet("123");
+            // lấy ra sheet mới
+            Sheet sheet = workbook.getSheetAt(sheetIndex);
 
-        /*// Ghi thời gian hiện tại vào ô A1
-        Row row1 = sheet.createRow(0);
-        Cell cellA1 = row1.createCell(0);
 
-        // Ghi thời gian hiện tại vào dòng đầu tiên
-        Date currentDate = new Date();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmm");
+/*            // Ghi thời gian hiện tại vào ô A1
+            Row row1 = sheet.createRow(0);
+            Cell cellA1 = row1.createCell(0);
+
+            // Ghi thời gian hiện tại vào dòng đầu tiên
+            Date currentDate = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 //        SimpleDateFormat sdfSecond = new SimpleDateFormat("yyMMddHHmmss");
 
-        // Tăng thời gian lên timePlus phút
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentDate);
-        calendar.add(Calendar.MINUTE, timePlus);
+            // Tăng thời gian lên timePlus phút
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(currentDate);
+            calendar.add(Calendar.MINUTE, timePlus);
 
-        // Lấy thời gian sau khi tăng
-        Date newDate = calendar.getTime();
+            // Lấy thời gian sau khi tăng
+            Date newDate = calendar.getTime();
 
-        String newTime = sdf.format(currentDate);
+            String newTime = sdf.format(currentDate);
 
-        cellA1.setCellValue(newTime + "+" + timePlus);
+            cellA1.setCellValue(newTime + "+" + timePlus);
 
-        // Ghi size1, size2, size3, 1 vào ô A2, B2, C2, D2
-        Row row2 = sheet.createRow(1);
-        row2.createCell(0).setCellValue(size1);
-        row2.createCell(1).setCellValue(size2);
-        row2.createCell(2).setCellValue(size3);
-        row2.createCell(3).setCellValue(1);
+            // Ghi size1, size2, size3, 1 vào ô A2, B2, C2, D2
+            Row row2 = sheet.createRow(1);
+            row2.createCell(0).setCellValue(size1);
+            row2.createCell(1).setCellValue(size2);
+            row2.createCell(2).setCellValue(size3);
+            row2.createCell(3).setCellValue(1);
 
-        // Ghi koSyuNumMark, 1, rowToriAiNum, 1 vào ô A3, B3, C3, D3
-        Row row3 = sheet.createRow(2);
-        row3.createCell(0).setCellValue(koSyuNumMark);
-        row3.createCell(1).setCellValue(1);
-        row3.createCell(2).setCellValue(rowToriAiNum);
-        row3.createCell(3).setCellValue(1);
+            // Ghi koSyuNumMark, 1, rowToriAiNum, 1 vào ô A3, B3, C3, D3
+            Row row3 = sheet.createRow(2);
+            row3.createCell(0).setCellValue(koSyuNumMark);
+            row3.createCell(1).setCellValue(1);
+            row3.createCell(2).setCellValue(rowToriAiNum);
+            row3.createCell(3).setCellValue(1);
 
-        int rowIndex = 3;
+            int rowIndex = 3;
 
-        // tổng chiều dài các kozai
-        double kouzaiChouGoukei = 0;
-        double seiHinChouGoukei = 0;
-        // Ghi dữ liệu từ KA_KOU_PAIRS vào các ô
-        for (Map.Entry<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> entry : kaKouPairs.entrySet()) {
-            if (rowIndex >= 102) break;
+            // tổng chiều dài các kozai
+            double kouzaiChouGoukei = 0;
+            double seiHinChouGoukei = 0;
+            // Ghi dữ liệu từ KA_KOU_PAIRS vào các ô
+            for (Map.Entry<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> entry : kaKouPairs.entrySet()) {
+                if (rowIndex >= 102) break;
 
-            Map<StringBuilder, Integer> kouZaiChouPairs = entry.getKey();
-            Map<StringBuilder[], Integer> meiSyouPairs = entry.getValue();
+                Map<StringBuilder, Integer> kouZaiChouPairs = entry.getKey();
+                Map<StringBuilder[], Integer> meiSyouPairs = entry.getValue();
 
-            String keyTemp = "";
-            int valueTemp = 0;
+                String keyTemp = "";
+                int valueTemp = 0;
 
-            // Ghi dữ liệu từ mapkey vào ô D4
-            for (Map.Entry<StringBuilder, Integer> kouZaiEntry : kouZaiChouPairs.entrySet()) {
+                // Ghi dữ liệu từ mapkey vào ô D4
+                for (Map.Entry<StringBuilder, Integer> kouZaiEntry : kouZaiChouPairs.entrySet()) {
 
-                keyTemp = String.valueOf(kouZaiEntry.getKey());
-                valueTemp = kouZaiEntry.getValue();
-                // cộng thêm chiều dài của bozai * số lượng vào tổng
-                kouzaiChouGoukei += Double.parseDouble(keyTemp) * valueTemp;
-            }
-
-            // Ghi dữ liệu từ mapvalue vào ô A4, B4 và các hàng tiếp theo
-            for (int i = 0; i < valueTemp; i++) {
-                int j = 0;
-                for (Map.Entry<StringBuilder[], Integer> meiSyouEntry : meiSyouPairs.entrySet()) {
-                    if (rowIndex >= 102) break;
-                    // chiều dài sản phẩm
-                    String leng = String.valueOf(meiSyouEntry.getKey()[1]);
-                    // số lượng sản phẩm
-                    String num = meiSyouEntry.getValue().toString();
-
-                    Row row = sheet.createRow(rowIndex++);
-                    row.createCell(0).setCellValue(leng);
-                    row.createCell(1).setCellValue(num);
-                    row.createCell(2).setCellValue(String.valueOf(meiSyouEntry.getKey()[0]));
-
-                    // cộng thêm vào chiều dài của sản phẩm * số lượng vào tổng
-                    seiHinChouGoukei += Double.parseDouble(leng) * Double.parseDouble(num);
-                    j++;
+                    keyTemp = String.valueOf(kouZaiEntry.getKey());
+                    valueTemp = kouZaiEntry.getValue();
+                    // cộng thêm chiều dài của bozai * số lượng vào tổng
+                    kouzaiChouGoukei += Double.parseDouble(keyTemp) * valueTemp;
                 }
-                sheet.getRow(rowIndex - j).createCell(3).setCellValue(keyTemp);
+
+                // Ghi dữ liệu từ mapvalue vào ô A4, B4 và các hàng tiếp theo
+                for (int i = 0; i < valueTemp; i++) {
+                    int j = 0;
+                    for (Map.Entry<StringBuilder[], Integer> meiSyouEntry : meiSyouPairs.entrySet()) {
+                        if (rowIndex >= 102) break;
+                        // chiều dài sản phẩm
+                        String leng = String.valueOf(meiSyouEntry.getKey()[1]);
+                        // số lượng sản phẩm
+                        String num = meiSyouEntry.getValue().toString();
+
+                        Row row = sheet.createRow(rowIndex++);
+                        row.createCell(0).setCellValue(leng);
+                        row.createCell(1).setCellValue(num);
+                        row.createCell(2).setCellValue(String.valueOf(meiSyouEntry.getKey()[0]));
+
+                        // cộng thêm vào chiều dài của sản phẩm * số lượng vào tổng
+                        seiHinChouGoukei += Double.parseDouble(leng) * Double.parseDouble(num);
+                        j++;
+                    }
+                    sheet.getRow(rowIndex - j).createCell(3).setCellValue(keyTemp);
+                }
             }
-        }
 
 
-        // Ghi giá trị 0 vào các ô A99, B99, C99, D99
-        Row lastRow = sheet.createRow(rowIndex);
-        lastRow.createCell(0).setCellValue(0);
-        lastRow.createCell(1).setCellValue(0);
-        lastRow.createCell(2).setCellValue(0);
-        lastRow.createCell(3).setCellValue(0);*/
+            // Ghi giá trị 0 vào các ô A99, B99, C99, D99
+            Row lastRow = sheet.createRow(rowIndex);
+            lastRow.createCell(0).setCellValue(0);
+            lastRow.createCell(1).setCellValue(0);
+            lastRow.createCell(2).setCellValue(0);
+            lastRow.createCell(3).setCellValue(0);*/
+
             // Khóa sheet với mật khẩu
-            workbook.getSheetAt(sheetIndex).protectSheet("");
+            sheet.protectSheet("");
             try (FileOutputStream fileOut = new FileOutputStream(excelPath)) {
                 workbook.write(fileOut);
 

@@ -938,6 +938,8 @@ public class ConVertPdfToExcelCHLController implements Initializable {
                                 // tạo vùng ngăn cách giữa 2 giá trị tổng chiều dài
                                 Label separation = new Label("|");
 
+                                // nếu hàng có chứa từ EXCEL tứ là hàng có chứa tên file cần tạo thì chỉ thêm label
+                                // chứa tên để hiển thị thôi, còn các trường hợp khác thêm như bình thường
                                 if (getItem().getName().contains("EXCEL")) {
                                     // thêm các control vào hbox theo thứ tự xác định
                                     hBox.getChildren().add(labelName);
