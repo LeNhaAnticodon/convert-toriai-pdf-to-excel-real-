@@ -39,7 +39,7 @@ public class ReadPDFToExcel {
     private static String kirirosu = "";
 
     // tên file chl sẽ tạo được ghi trong phần 工事名, chưa bao gồm loại vật liệu
-    private static String fileExcelName = "";
+    public static String fileExcelName = "";
 
     // link của file pdf
     private static String pdfPath = "";
@@ -147,6 +147,7 @@ public class ReadPDFToExcel {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        csvFileNames.add(new CsvFile("EXCEL: " + fileExcelName + ".xlsx", "", 0, 0));
 /*        // Đặt quyền chỉ đọc cho file
         File readOnly = new File(excelPath);
         if (readOnly.exists()) {
@@ -1003,7 +1004,8 @@ public class ReadPDFToExcel {
             int sheetSampleIndex = 0; // Thay đổi thành chỉ số của sheet cần sao chép
             Sheet sheet = workbook.cloneSheet(sheetSampleIndex);
             workbook.setSheetName(sheetIndex, kouSyu);
-
+            // Khóa sheet với mật khẩu
+//            sheet.protectSheet("123");
 
         /*// Ghi thời gian hiện tại vào ô A1
         Row row1 = sheet.createRow(0);
@@ -1094,14 +1096,15 @@ public class ReadPDFToExcel {
         lastRow.createCell(1).setCellValue(0);
         lastRow.createCell(2).setCellValue(0);
         lastRow.createCell(3).setCellValue(0);*/
-
             // Khóa sheet với mật khẩu
-            sheet.protectSheet("");
-
+            workbook.getSheetAt(sheetIndex).protectSheet("");
             try (FileOutputStream fileOut = new FileOutputStream(excelPath)) {
                 workbook.write(fileOut);
+
                 workbook.close();
             }
+
+
         } catch (IOException e) {
             if (e instanceof FileNotFoundException) {
                 System.out.println("File đang được mở bởi người dùng khác");
@@ -1114,7 +1117,7 @@ public class ReadPDFToExcel {
 
 //        System.out.println("tong chieu dai bozai " + kouzaiChouGoukei);
 //        System.out.println("tong chieu dai san pham " + seiHinChouGoukei);
-        csvFileNames.add(new CsvFile(kouSyu, kouSyuName, 0, 0));
+        csvFileNames.add(new CsvFile("Sheet " + sheetIndex + ": " + kouSyu, kouSyuName, 0, 0));
 
     }
 

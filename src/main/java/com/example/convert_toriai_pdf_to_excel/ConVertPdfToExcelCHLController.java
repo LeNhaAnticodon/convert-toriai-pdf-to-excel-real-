@@ -531,7 +531,7 @@ public class ConVertPdfToExcelCHLController implements Initializable {
                 if (e instanceof FileNotFoundException) {
                     confirmAlert.getButtonTypes().clear();
                     confirmAlert.getButtonTypes().add(ButtonType.OK);
-                    confirmAlert.setHeaderText("Tên file CHL đang tạo: (\"" + ReadPDFToExcel.fileName + "\") trùng tên với 1 file CHL khác đang được mở nên không thể ghi đè");
+                    confirmAlert.setHeaderText("Tên file CHL đang tạo: (\"" + ReadPDFToExcel.fileExcelName+ ".xlsx" + "\") trùng tên với 1 file CHL khác đang được mở nên không thể ghi đè");
                     confirmAlert.setContentText("Hãy đóng file CHL đang mở để tiếp tục!");
                     System.out.println("File đang được mở bởi người dùng khác");
                     updateLangAlert(confirmAlert);
@@ -938,12 +938,24 @@ public class ConVertPdfToExcelCHLController implements Initializable {
                                 // tạo vùng ngăn cách giữa 2 giá trị tổng chiều dài
                                 Label separation = new Label("|");
 
-                                // thêm các control vào hbox theo thứ tự xác định
-                                hBox.getChildren().add(labelName);
-                                hBox.getChildren().add(imageView);
-                                hBox.getChildren().add(labelSeihinChou);
-                                hBox.getChildren().add(separation);
-                                hBox.getChildren().add(labelKouzaiChou);
+                                if (getItem().getName().contains("EXCEL")) {
+                                    // thêm các control vào hbox theo thứ tự xác định
+                                    hBox.getChildren().add(labelName);
+                                    hBox.setStyle("-fx-font-weight: bold; -fx-background-color: #FFE0B2; -fx-padding: 5 5 5 5; -fx-background-radius: 15");
+                                    // chữ ở trung tâm
+                                    labelName.setAlignment(Pos.CENTER);
+                                    labelName.setStyle("-fx-padding: 0 0 0 0;-fx-font-size: 18");
+                                    // chữ màu BLUE
+                                    labelName.setTextFill(Color.valueOf("#0097A7"));
+                                } else {
+                                    // thêm các control vào hbox theo thứ tự xác định
+                                    hBox.getChildren().add(labelName);
+                                    hBox.getChildren().add(imageView);
+                                    hBox.getChildren().add(labelSeihinChou);
+                                    hBox.getChildren().add(separation);
+                                    hBox.getChildren().add(labelKouzaiChou);
+                                }
+
 //                                hBox.setSpacing(10);
 
                                 // gán hbox cho dòng của list view
