@@ -13,6 +13,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -36,7 +39,7 @@ public class ReadPDFToExcel {
     private static String kirirosu = "";
 
     // tên file chl sẽ tạo được ghi trong phần 工事名, chưa bao gồm loại vật liệu
-    private static String fileChlName = "";
+    private static String fileExcelName = "";
 
     // link của file pdf
     private static String pdfPath = "";
@@ -57,12 +60,14 @@ public class ReadPDFToExcel {
     private static String kouSyuName;
     // tên file chl đầy đủ sẽ tạo đã bao gồm tên loại vật liệu
     public static String fileName;
+    private static String excelPath;
 
     /**
      * chuyển đổi pdf tính vật liệu thành các file chl theo từng vật liệu khác nhau
-     * @param filePDFPath link file pdf
+     *
+     * @param filePDFPath    link file pdf
      * @param fileChlDirPath link thư mục chứa file chl sẽ tạo
-     * @param csvFileNames list chứa danh sách các file chl đã tạo
+     * @param csvFileNames   list chứa danh sách các file chl đã tạo
      */
     public static void convertPDFToExcel(String filePDFPath, String fileChlDirPath, ObservableList<CsvFile> csvFileNames) throws FileNotFoundException, TimeoutException, IOException {
         // xóa danh sách cũ trước khi thực hiện, tránh bị ghi chồng lên nhau
@@ -116,6 +121,45 @@ public class ReadPDFToExcel {
             }*/
         }
 
+        // đoạn code copy file này khác với app chl vì nó chỉ tạo 1 file nên chỉ chạy 1 lần ở đoạn đầu này
+        // tạo path chứa file excel
+        // mà không chạy trong vòng lặp bên dưới như trong hàm writeDataToChl
+        excelPath = csvExcelDirPath + "\\" + fileExcelName + ".xlsx";
+        // Tạo đối tượng File đại diện cho file cần xóa
+        File file = new File(excelPath);
+        // Kiểm tra nếu file tồn tại và xóa nó
+        // vì nếu file đang được mở thì không thể ghi đè nhưng do file là readonly nên có thể xóa dù đang mở
+        // xóa xong file thì có thể ghi lại file mới mà không bị lỗi không thể ghi đè
+        if (file.exists()) {
+            if (file.delete()) {
+                System.out.println("File đã được xóa thành công.");
+            } else {
+                System.out.println("Xóa file thất bại.");
+            }
+        }
+        Path copyFile = Paths.get(excelPath);
+        // Đọc file mẫu từ resources
+        try (InputStream sourceFile = ReadPDFToExcel.class.getResourceAsStream("/com/example/convert_toriai_pdf_to_excel/sampleFiles/sample files.xlsx")) {
+            if (sourceFile == null) {
+                throw new IOException("File mẫu không tồn tại trong JAR ứng dụng");
+            }
+            Files.copy(sourceFile, copyFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+/*        // Đặt quyền chỉ đọc cho file
+        File readOnly = new File(excelPath);
+        if (readOnly.exists()) {
+            boolean result = readOnly.setReadOnly();
+            if (result) {
+                System.out.println("File is set to read-only.");
+            } else {
+                System.out.println("Failed to set file to read-only.");
+            }
+        } else {
+            System.out.println("File does not exist.");
+        }*/
+
         // lặp qua từng loại vật liệu trong list và ghi chúng vào các file chl
         for (int i = 1; i < kakuKouSyuList.size(); i++) {
             // tách các đoạn bozai thành mảng
@@ -132,13 +176,15 @@ public class ReadPDFToExcel {
 //            writeDataToExcel(kaKouPairs, i - 1, csvFileNames);
 //            writeDataToCSV(kaKouPairs, i - 1, csvFileNames);
             // ghi thông tin vào file định dạng sysc2 là file của chl
-            writeDataToChl(kaKouPairs, i, csvFileNames);
+//            writeDataToChl(kaKouPairs, i, csvFileNames);
+            writeDataToExcelToriai(kaKouPairs, i, csvFileNames);
         }
 
     }
 
     /**
      * lấy toàn bộ text của file pdf
+     *
      * @return mảng chứa các trang của file pdf, đầu trang chứa tên vật liệu
      */
     private static String[] getFullToriaiText() throws IOException {
@@ -165,6 +211,7 @@ public class ReadPDFToExcel {
     /**
      * lấy các thông tin của đơn và ghi vào các biến nhớ toàn cục
      * các thông tin nằm trong vùng xác định, dùng hàm extractValue để lấy
+     *
      * @param header text chứa thông tin
      */
     private static void getHeaderData(String header) {
@@ -174,13 +221,14 @@ public class ReadPDFToExcel {
 
         kouJiMe = extractValue(header, "考[", "]");
         kyakuSakiMei = extractValue(header, "客先名[", "]");
-        fileChlName = extractValue(header, "工事名[", "]");
+        fileExcelName = extractValue(header, "工事名[", "]");
 
         System.out.println(shortNouKi + " : " + kouJiMe + " : " + kyakuSakiMei);
     }
 
     /**
      * lấy thông số đầy đủ của vật liệu, tên vật liệu, mã vật liệu, 3 size của vật liệu và ghi vào biến toàn cục
+     *
      * @param kakuKakou mảng chứa các tính vật liệu của vật liệu đang xét
      */
     private static void getKouSyu(String[] kakuKakou) {
@@ -243,9 +291,10 @@ public class ReadPDFToExcel {
 
     /**
      * phân tích tính vật liệu của vật liệu đang xét và gán vào map thông tin
+     *
      * @param kakuKakou mảng chứa các tính vật liệu của vật liệu đang xét
      * @return map các đoạn tính vật liệu chứa key cũng là map chỉ có 1 cặp có key là chiều dài bozai, value là số lượng bozai
-     *  còn value của kaKouPairs cũng là map chứa các cặp key là mảng 2 phần tử gồm tên và chiều dài sản phẩm, value là số lượng sản phẩm
+     * còn value của kaKouPairs cũng là map chứa các cặp key là mảng 2 phần tử gồm tên và chiều dài sản phẩm, value là số lượng sản phẩm
      */
     private static Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> getToriaiData(String[] kakuKakou) throws TimeoutException {
         rowToriAiNum = 0;
@@ -353,7 +402,7 @@ public class ReadPDFToExcel {
             rowToriAiNum = 99;
             System.out.println("vượt quá 99 hàng");
             // lấy tên file chl trong tiêu đề gắn thêm tên vật liệu + .sysc2 để in ra thông báo
-            fileName = fileChlName + " " + kouSyu + ".sysc2";
+            fileName = fileExcelName + " " + kouSyu + ".sysc2";
             throw new TimeoutException();
         }
 
@@ -476,7 +525,7 @@ public class ReadPDFToExcel {
 
         String[] linkarr = pdfPath.split("\\\\");
 //        fileName = linkarr[linkarr.length - 1].split("\\.")[0] + " " + kouSyu + ".xlsx";
-        fileName = fileChlName + " " + kouSyu + ".xlsx";
+        fileName = fileExcelName + " " + kouSyu + ".xlsx";
 //        String fileNameAndTime = linkarr[linkarr.length - 1].split("\\.")[0] + "(" + sdfSecond.format(currentDate) + ")--" + kouSyu + ".csv";
         String excelPath = csvExcelDirPath + "\\" + fileName;
 
@@ -548,7 +597,7 @@ public class ReadPDFToExcel {
 
         String[] linkarr = pdfPath.split("\\\\");
 //        fileName = linkarr[linkarr.length - 1].split("\\.")[0] + " " + kouSyu + ".csv";
-        fileName = fileChlName + " " + kouSyu + ".csv";
+        fileName = fileExcelName + " " + kouSyu + ".csv";
 //        // tạo tên file có gắn thêm thời gian để không trùng với file trước đó
 //        String fileNameAndTime = linkarr[linkarr.length - 1].split("\\.")[0] + "(" + sdfSecond.format(currentDate) + ")--" + kouSyu + ".csv";
         String csvPath = csvExcelDirPath + "\\" + fileName;
@@ -689,8 +738,9 @@ public class ReadPDFToExcel {
 
     /**
      * ghi tính vật liệu của vật liệu đang xét trong map vào file mới
-     * @param kaKouPairs map chứa tính vật liệu
-     * @param timePlus thời gian hoặc chỉ số cộng thêm vào ô time để tránh bị trùng tên  time giữa các file
+     *
+     * @param kaKouPairs   map chứa tính vật liệu
+     * @param timePlus     thời gian hoặc chỉ số cộng thêm vào ô time để tránh bị trùng tên  time giữa các file
      * @param csvFileNames list chứa danh sách các file đã tạo
      */
     private static void writeDataToChl(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int timePlus, ObservableList<CsvFile> csvFileNames) throws FileNotFoundException {
@@ -716,7 +766,7 @@ public class ReadPDFToExcel {
         String currentTime = sdf.format(currentDate);
 
         // lấy tên file chl trong tiêu đề gắn thêm tên vật liệu + .sysc2
-        fileName = fileChlName + " " + kouSyu + ".sysc2";
+        fileName = fileExcelName + " " + kouSyu + ".sysc2";
 
 //        // tạo tên file có gắn thêm thời gian để không trùng với file trước đó
 //        String fileNameAndTime = linkarr[linkarr.length - 1].split("\\.")[0] + "(" + sdfSecond.format(currentDate) + ")--" + kouSyu + ".csv";
@@ -922,9 +972,10 @@ public class ReadPDFToExcel {
 
     /**
      * trả về đoạn text nằm giữa startDelimiter và endDelimiter
-     * @param text đoạn văn bản chứa thông tin tìm kiếm
+     *
+     * @param text           đoạn văn bản chứa thông tin tìm kiếm
      * @param startDelimiter đoạn text phía trước vùng cần tìm
-     * @param endDelimiter đoạn text phía sau vùng cần tìm
+     * @param endDelimiter   đoạn text phía sau vùng cần tìm
      * @return đoạn text nằm giữa startDelimiter và endDelimiter
      */
     private static String extractValue(String text, String startDelimiter, String endDelimiter) {
@@ -939,9 +990,139 @@ public class ReadPDFToExcel {
     }
 
 
+    private static void writeDataToExcelToriai(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int sheetIndex, ObservableList<CsvFile> csvFileNames) throws FileNotFoundException {
+
+        try (FileInputStream file = new FileInputStream(excelPath)) {
+            Workbook workbook = new XSSFWorkbook(file);
+
+            if (kouSyu.contains("[")) {
+                kouSyu = kouSyu.replace("[", "U");
+            }
+
+            // Lấy sheet gốc cần sao chép
+            int sheetSampleIndex = 0; // Thay đổi thành chỉ số của sheet cần sao chép
+            Sheet sheet = workbook.cloneSheet(sheetSampleIndex);
+            workbook.setSheetName(sheetIndex, kouSyu);
+
+
+        /*// Ghi thời gian hiện tại vào ô A1
+        Row row1 = sheet.createRow(0);
+        Cell cellA1 = row1.createCell(0);
+
+        // Ghi thời gian hiện tại vào dòng đầu tiên
+        Date currentDate = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmm");
+//        SimpleDateFormat sdfSecond = new SimpleDateFormat("yyMMddHHmmss");
+
+        // Tăng thời gian lên timePlus phút
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        calendar.add(Calendar.MINUTE, timePlus);
+
+        // Lấy thời gian sau khi tăng
+        Date newDate = calendar.getTime();
+
+        String newTime = sdf.format(currentDate);
+
+        cellA1.setCellValue(newTime + "+" + timePlus);
+
+        // Ghi size1, size2, size3, 1 vào ô A2, B2, C2, D2
+        Row row2 = sheet.createRow(1);
+        row2.createCell(0).setCellValue(size1);
+        row2.createCell(1).setCellValue(size2);
+        row2.createCell(2).setCellValue(size3);
+        row2.createCell(3).setCellValue(1);
+
+        // Ghi koSyuNumMark, 1, rowToriAiNum, 1 vào ô A3, B3, C3, D3
+        Row row3 = sheet.createRow(2);
+        row3.createCell(0).setCellValue(koSyuNumMark);
+        row3.createCell(1).setCellValue(1);
+        row3.createCell(2).setCellValue(rowToriAiNum);
+        row3.createCell(3).setCellValue(1);
+
+        int rowIndex = 3;
+
+        // tổng chiều dài các kozai
+        double kouzaiChouGoukei = 0;
+        double seiHinChouGoukei = 0;
+        // Ghi dữ liệu từ KA_KOU_PAIRS vào các ô
+        for (Map.Entry<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> entry : kaKouPairs.entrySet()) {
+            if (rowIndex >= 102) break;
+
+            Map<StringBuilder, Integer> kouZaiChouPairs = entry.getKey();
+            Map<StringBuilder[], Integer> meiSyouPairs = entry.getValue();
+
+            String keyTemp = "";
+            int valueTemp = 0;
+
+            // Ghi dữ liệu từ mapkey vào ô D4
+            for (Map.Entry<StringBuilder, Integer> kouZaiEntry : kouZaiChouPairs.entrySet()) {
+
+                keyTemp = String.valueOf(kouZaiEntry.getKey());
+                valueTemp = kouZaiEntry.getValue();
+                // cộng thêm chiều dài của bozai * số lượng vào tổng
+                kouzaiChouGoukei += Double.parseDouble(keyTemp) * valueTemp;
+            }
+
+            // Ghi dữ liệu từ mapvalue vào ô A4, B4 và các hàng tiếp theo
+            for (int i = 0; i < valueTemp; i++) {
+                int j = 0;
+                for (Map.Entry<StringBuilder[], Integer> meiSyouEntry : meiSyouPairs.entrySet()) {
+                    if (rowIndex >= 102) break;
+                    // chiều dài sản phẩm
+                    String leng = String.valueOf(meiSyouEntry.getKey()[1]);
+                    // số lượng sản phẩm
+                    String num = meiSyouEntry.getValue().toString();
+
+                    Row row = sheet.createRow(rowIndex++);
+                    row.createCell(0).setCellValue(leng);
+                    row.createCell(1).setCellValue(num);
+                    row.createCell(2).setCellValue(String.valueOf(meiSyouEntry.getKey()[0]));
+
+                    // cộng thêm vào chiều dài của sản phẩm * số lượng vào tổng
+                    seiHinChouGoukei += Double.parseDouble(leng) * Double.parseDouble(num);
+                    j++;
+                }
+                sheet.getRow(rowIndex - j).createCell(3).setCellValue(keyTemp);
+            }
+        }
+
+
+        // Ghi giá trị 0 vào các ô A99, B99, C99, D99
+        Row lastRow = sheet.createRow(rowIndex);
+        lastRow.createCell(0).setCellValue(0);
+        lastRow.createCell(1).setCellValue(0);
+        lastRow.createCell(2).setCellValue(0);
+        lastRow.createCell(3).setCellValue(0);*/
+
+            // Khóa sheet với mật khẩu
+            sheet.protectSheet("");
+
+            try (FileOutputStream fileOut = new FileOutputStream(excelPath)) {
+                workbook.write(fileOut);
+                workbook.close();
+            }
+        } catch (IOException e) {
+            if (e instanceof FileNotFoundException) {
+                System.out.println("File đang được mở bởi người dùng khác");
+                throw new FileNotFoundException();
+            }
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+
+//        System.out.println("tong chieu dai bozai " + kouzaiChouGoukei);
+//        System.out.println("tong chieu dai san pham " + seiHinChouGoukei);
+        csvFileNames.add(new CsvFile(kouSyu, kouSyuName, 0, 0));
+
+    }
+
+
     /**
      * chuyển đổi text nhập vào sang số double rồi nhân với hệ số và trả về với kiểu int
-     * @param textNum text cần chuyển
+     *
+     * @param textNum    text cần chuyển
      * @param multiplier hệ số
      * @return số int đã nhân với hệ số
      */

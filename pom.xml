@@ -110,7 +110,7 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
-                                com.example.convert_toriai_from_pdf_to_excel/com.example.convert_toriai_from_pdf_to_chl.MainApplication
+                                com.example.convert_toriai_from_pdf_to_excel/com.example.convert_toriai_pdf_to_excel.MainApplication
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
@@ -136,7 +136,7 @@
                             <transformers>
                                 <transformer implementation=
                                                      "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.example.convert_toriai_from_pdf_to_chl.Main</mainClass>
+                                    <mainClass>com.example.convert_toriai_pdf_to_excel.Main</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
