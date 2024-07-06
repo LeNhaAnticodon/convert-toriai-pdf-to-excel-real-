@@ -26,7 +26,7 @@ public class ReadPDFToExcel {
     // time tháng và ngày
     private static String shortNouKi = "";
     // 備考
-    private static String kouJiMe = "";
+    private static String bikou = "";
     // 客先名
     private static String kyakuSakiMei = "";
     // 3 kích thước của vật liệu
@@ -39,7 +39,7 @@ public class ReadPDFToExcel {
     private static String kirirosu = "";
 
     // tên file chl sẽ tạo được ghi trong phần 工事名, chưa bao gồm loại vật liệu
-    public static String fileExcelName = "";
+    public static String fileExcelName = "name";
 
     // link của file pdf
     private static String pdfPath = "";
@@ -61,6 +61,11 @@ public class ReadPDFToExcel {
     // tên file chl đầy đủ sẽ tạo đã bao gồm tên loại vật liệu
     public static String fileName;
     private static String excelPath;
+    private static String chuyuBan = "";
+    private static String teiHaiSha = "";
+    private static String tanZyuu;
+    private static List<Double> listBoZai = new ArrayList<>();
+    private static List<Double> listSeiHin = new ArrayList<>();
 
     /**
      * chuyển đổi pdf tính vật liệu thành các file chl theo từng vật liệu khác nhau
@@ -222,11 +227,17 @@ public class ReadPDFToExcel {
         String[] nouKiArr = nouKi.split("/");
         shortNouKi = nouKiArr[0] + nouKiArr[1] + nouKiArr[2];
 
-        kouJiMe = extractValue(header, "考[", "]");
+        bikou = extractValue(header, "考[", "]");
         kyakuSakiMei = extractValue(header, "客先名[", "]");
-        fileExcelName = extractValue(header, "工事名[", "]");
+        String names = extractValue(header, "工事名[", "]");
+        String[] namesArr = names.split("\\+");
+        if (namesArr.length ==  3) {
+            fileExcelName = namesArr[0];
+            chuyuBan = namesArr[1];
+            teiHaiSha = namesArr[2];
+        }
 
-        System.out.println(shortNouKi + " : " + kouJiMe + " : " + kyakuSakiMei);
+        System.out.println(shortNouKi + " : " + bikou + " : " + kyakuSakiMei + " : " + chuyuBan + " : " + teiHaiSha);
     }
 
     /**
@@ -934,7 +945,7 @@ public class ReadPDFToExcel {
             writer.write("20.0," + kirirosu + ",,");
             writer.newLine();
             // ghi các tên và ngày vào dòng tiếp
-            writer.write(kouJiMe + "," + kyakuSakiMei + "," + shortNouKi + ",");
+            writer.write(bikou + "," + kyakuSakiMei + "," + shortNouKi + ",");
             writer.newLine();
             // dòng tiếp theo là ghi 備考１、備考２ theo định dạng 備考１,備考２,, nhưng không có nên không cần chỉ ghi (,,,)
             writer.write(",,,");
@@ -1014,34 +1025,31 @@ public class ReadPDFToExcel {
             Sheet sheet = workbook.getSheetAt(sheetIndex);
 
 
-/*            // Ghi thời gian hiện tại vào ô A1
-            Row row1 = sheet.createRow(0);
-            Cell cellA1 = row1.createCell(0);
-
-            // Ghi thời gian hiện tại vào dòng đầu tiên
             Date currentDate = new Date();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-//        SimpleDateFormat sdfSecond = new SimpleDateFormat("yyMMddHHmmss");
 
-            // Tăng thời gian lên timePlus phút
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(currentDate);
-            calendar.add(Calendar.MINUTE, timePlus);
+            String time = sdf.format(currentDate);
+            // Ghi thời gian hiện tại vào ô C1
+            sheet.getRow(0).getCell(2).setCellValue(time);
 
-            // Lấy thời gian sau khi tăng
-            Date newDate = calendar.getTime();
+            // Ghi tên khách hàng vào ô G6
+            sheet.getRow(0).getCell(6).setCellValue(kyakuSakiMei);
 
-            String newTime = sdf.format(currentDate);
+            // Ghi bikou vào ô M12
+            sheet.getRow(0).getCell(12).setCellValue(bikou);
 
-            cellA1.setCellValue(newTime + "+" + timePlus);
+            // Ghi shortNouKi vào ô S18
+            sheet.getRow(0).getCell(18).setCellValue(shortNouKi);
 
-            // Ghi size1, size2, size3, 1 vào ô A2, B2, C2, D2
-            Row row2 = sheet.createRow(1);
-            row2.createCell(0).setCellValue(size1);
-            row2.createCell(1).setCellValue(size2);
-            row2.createCell(2).setCellValue(size3);
-            row2.createCell(3).setCellValue(1);
+            // Ghi saizu vào ô C2, chưa dùng
+            sheet.getRow(1).getCell(2).setCellValue("");
 
+            // Ghi chuyuBan vào ô I8
+            sheet.getRow(1).getCell(8).setCellValue(chuyuBan);
+            // Ghi teiHaiSha vào ô O14
+            sheet.getRow(1).getCell(14).setCellValue(teiHaiSha);
+
+            /*
             // Ghi koSyuNumMark, 1, rowToriAiNum, 1 vào ô A3, B3, C3, D3
             Row row3 = sheet.createRow(2);
             row3.createCell(0).setCellValue(koSyuNumMark);
@@ -1094,15 +1102,10 @@ public class ReadPDFToExcel {
                     }
                     sheet.getRow(rowIndex - j).createCell(3).setCellValue(keyTemp);
                 }
-            }
+            }*/
 
 
-            // Ghi giá trị 0 vào các ô A99, B99, C99, D99
-            Row lastRow = sheet.createRow(rowIndex);
-            lastRow.createCell(0).setCellValue(0);
-            lastRow.createCell(1).setCellValue(0);
-            lastRow.createCell(2).setCellValue(0);
-            lastRow.createCell(3).setCellValue(0);*/
+
 
             // Khóa sheet với mật khẩu
             sheet.protectSheet("");
