@@ -2,6 +2,7 @@ package com.example.convert_toriai_pdf_to_excel.convert;
 
 import com.example.convert_toriai_pdf_to_excel.model.CsvFile;
 import com.opencsv.CSVWriter;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeoutException;
 
 public class ReadPDFToExcel {
 
+    private static final Set<Double> seiHinSet1 = new LinkedHashSet<>();
     // time tháng và ngày
     private static String shortNouKi = "";
     // 備考
@@ -66,6 +68,7 @@ public class ReadPDFToExcel {
     private static String tanZyuu;
     private static List<Double> listBoZai = new ArrayList<>();
     private static List<Double> listSeiHin = new ArrayList<>();
+    private static Set<Double> seiHinSet;
 
     /**
      * chuyển đổi pdf tính vật liệu thành các file chl theo từng vật liệu khác nhau
@@ -312,6 +315,9 @@ public class ReadPDFToExcel {
      */
     private static Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> getToriaiData(String[] kakuKakou) throws TimeoutException {
         rowToriAiNum = 0;
+
+        // list chứa danh sách các sản phẩm không trùng lặp
+        ObservableList<Double> seiHinList = FXCollections.observableArrayList(seiHinSet1);
 
         // tạo map
         Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs = new LinkedHashMap<>();
@@ -1048,6 +1054,8 @@ public class ReadPDFToExcel {
             sheet.getRow(1).getCell(8).setCellValue(chuyuBan);
             // Ghi teiHaiSha vào ô O14
             sheet.getRow(1).getCell(14).setCellValue(teiHaiSha);
+
+
 
             /*
             // Ghi koSyuNumMark, 1, rowToriAiNum, 1 vào ô A3, B3, C3, D3
