@@ -24,7 +24,7 @@ import java.util.concurrent.TimeoutException;
 
 public class ReadPDFToExcel {
 
-    private static final Set<Double> seiHinSet1 = new LinkedHashSet<>();
+    private static final Set<Double> seiHinSet = new LinkedHashSet<>();
     // time tháng và ngày
     private static String shortNouKi = "";
     // 備考
@@ -68,7 +68,6 @@ public class ReadPDFToExcel {
     private static String tanZyuu;
     private static List<Double> listBoZai = new ArrayList<>();
     private static List<Double> listSeiHin = new ArrayList<>();
-    private static Set<Double> seiHinSet;
 
     /**
      * chuyển đổi pdf tính vật liệu thành các file chl theo từng vật liệu khác nhau
@@ -317,7 +316,7 @@ public class ReadPDFToExcel {
         rowToriAiNum = 0;
 
         // list chứa danh sách các sản phẩm không trùng lặp
-        ObservableList<Double> seiHinList = FXCollections.observableArrayList(seiHinSet1);
+        ObservableList<Double> seiHinList = FXCollections.observableArrayList(seiHinSet);
 
         // tạo map
         Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs = new LinkedHashMap<>();
@@ -350,8 +349,8 @@ public class ReadPDFToExcel {
                 // nếu dòng có 鋼材長 và 本数 thì là dòng chứa bozai
                 // lấy bozai và số lượng thêm vào map
                 if (line.contains("鋼材長:") && line.contains("本数:")) {
-                    String kouZaiChou = extractValue(line, "鋼材長:", "mm");
-                    String honSuu = extractValue(line, "本数:", " ").split(" ")[0];
+                    String kouZaiChou = extractValue(line, "鋼材長:", "mm").trim();
+                    String honSuu = extractValue(line, "本数:", " ").split(" ")[0].trim();
                     // mẫu định dạng "#.##". Mẫu này chỉ hiển thị phần thập phân nếu có, và tối đa là 2 chữ số thập phân.
                     DecimalFormat df = new DecimalFormat("#.##");
                     kouZaiChouPairs.put(new StringBuilder().append(df.format(Double.parseDouble(kouZaiChou))), convertStringToIntAndMul(honSuu, 1));
@@ -376,10 +375,11 @@ public class ReadPDFToExcel {
                     name = name.trim();
 
                     // lấy vùng chứa chiều dài là vùng cuối cùng trong mảng tên
-                    String length = meiSyouLengths[meiSyouLengths.length - 1];
+                    String length = meiSyouLengths[meiSyouLengths.length - 1].trim();
+
 
                     // thêm tên và chiều dài vào mảng với chiều dài x 100
-                    StringBuilder[] nameAndLength = {new StringBuilder().append(name), new StringBuilder().append(convertStringToIntAndMul(length, 100))};
+                    StringBuilder[] nameAndLength = {new StringBuilder().append(name), new StringBuilder().append(length)};
 
                     // lấy số lượng sản phẩm
                     String meiSyouHonSuu = extractValue(line, "mm x", "本").trim();

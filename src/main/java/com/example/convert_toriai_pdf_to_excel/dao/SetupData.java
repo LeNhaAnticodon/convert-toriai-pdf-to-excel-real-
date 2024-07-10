@@ -31,7 +31,7 @@ public class SetupData {
     // ví dụ: C:\Users\HuanTech PC\AppData\Roaming\convert pdf to chl
     private static final String appDataPath = System.getenv("APPDATA");
     // đường dẫn thư mục lưu cài đặt của chương trình từ địa chỉ app data đã lấy được ở trên
-    private static final Path myAppPath = Paths.get(appDataPath, "Convert PDF to CHL");
+    private static final Path myAppPath = Paths.get(appDataPath, "Convert PDF to EXCEL");
     // list chứa các control UI cần để thay đổi ngôn ngữ hiển thị
     private final ObservableList<Object> controls = FXCollections.observableArrayList();
 
