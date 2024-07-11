@@ -7,7 +7,6 @@ import javafx.collections.ObservableList;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
@@ -1078,45 +1077,77 @@ public class ReadPDFToExcel {
 
             }
 
+            // thêm j lần các cột mới tại các cột công thức
+            for (int j = 0; j < 3; j++) {
+                sheet.shiftColumns(4, 10000, 1);
+                sheet.shiftColumns(4 + 23 + j, 10000, 1);
+                sheet.shiftColumns(4 + 41 + 2 * j, 10000, 1);
 
-            sheet.shiftColumns(4, sheet.getLastRowNum(), 1);
-            sheet.shiftColumns(4 + 23, sheet.getLastRowNum(), 1);
-            sheet.shiftColumns(4 + 41, sheet.getLastRowNum(), 1);
-
-            for (int i = 0; i < 3; i++) {
-                Row row = sheet.getRow(i);
-                row.shiftCellsLeft(5, row.getLastCellNum(), 1);
-            }
-
-            for (int i = 26 + 0; i <= 41 + 0; i++) {
-                Row row = sheet.getRow(6);
-                Cell cell = row.getCell(i);
-
-                if (cell != null && cell.getCellType() == CellType.FORMULA) {
-                    String formula = cell.getCellFormula();
-                    formula = formula.replaceAll("L", "K");
-                    cell.setCellFormula(formula);
+                // dịch chuyển 3 hàng tiêu đề về vị trí ban đầu sau khi bị dịch chuyển sang phải 1 hàng
+                for (int i = 0; i < 3; i++) {
+                    Row row = sheet.getRow(i);
+                    row.shiftCellsLeft(5, row.getLastCellNum(), 1);
                 }
-            }
 
-            Cell srcCell;
-            Cell destCell;
-            for (int i = 3; i <= 9; i++) {
-                Row row = sheet.getRow(i);
-                // Sao chép ô từ cột srcColumn sang destColumn
-                srcCell = row.getCell(3);
-                destCell = row.createCell(4);
+                // sủa lại công thức tất cả các ô có giá trị L về K vì sau khi dịch chuyển 3 hàng tiêu đề về vị trí ban đầu
+                // công thức bị sai
+                for (int i = 26 + j; i <= 41 + 2 * j; i++) {
+                    Row row = sheet.getRow(6);
+                    Cell cell = row.getCell(i);
+
+                    if (cell != null && cell.getCellType() == CellType.FORMULA) {
+                        String formula = cell.getCellFormula();
+                        formula = formula.replaceAll("L", "K");
+                        cell.setCellFormula(formula);
+                    }
+                }
+
+                Cell srcCell;
+                Cell destCell;
+
+                // sao chép ô từ cột 3 sang cột 4 từ hàng 3 đến hàng 9
+                for (int i = 3; i <= 9; i++) {
+                    Row row = sheet.getRow(i);
+                    // Sao chép ô từ cột srcColumn sang destColumn
+                    srcCell = row.getCell(3);
+                    destCell = row.createCell(4);
+                    copyCellWithFormulaUpdate(srcCell, destCell, 1);
+                }
+
+                // tại hàng 7 copy ô từ cột 26 sang 27
+                Row row7Formula = sheet.getRow(6);
+                srcCell = row7Formula.getCell(26 + j);
+                destCell = row7Formula.createCell(27 + j);
+                copyCellWithFormulaUpdate(srcCell, destCell, 1);
+
+                // tại hàng 7 copy ô từ cột 44 sang 45
+                srcCell = row7Formula.getCell(44 + 2 * j);
+                destCell = row7Formula.createCell(45 + 2 * j);
+                copyCellWithFormulaUpdate(srcCell, destCell, 1);
+
+                // tại hàng 4 copy ô từ cột 44 sang 45
+                Row row4Formula = sheet.getRow(3);
+                srcCell = row4Formula.getCell(44 + 2 * j);
+                destCell = row4Formula.createCell(45 + 2 * j);
                 copyCellWithFormulaUpdate(srcCell, destCell, 1);
             }
 
-            Row row7Formula = sheet.getRow(6);
-            srcCell = row7Formula.getCell(26);
-            destCell = row7Formula.createCell(27);
-            copyCellWithFormulaUpdate(srcCell, destCell, 1);
+            sheet.shiftRows(7, sheet.getLastRowNum(), 1);
+            Row srcRow = sheet.getRow(6);
+            Row destRow = sheet.createRow(7);
 
-            srcCell = row7Formula.getCell(44);
-            destCell = row7Formula.createCell(45);
-            copyCellWithFormulaUpdate(srcCell, destCell, 1);
+            // Sao chép từng cell từ hàng nguồn sang hàng đích
+            for (int i = 0; i < srcRow.getLastCellNum(); i++) {
+                Cell sourceCell = srcRow.getCell(i);
+                Cell targetCell = destRow.createCell(i);
+
+                if (sourceCell != null) {
+                    copyRowCellWithFormulaUpdate(sourceCell, targetCell, 1);
+//                    targetCell.setCellValue(sourceCell.toString());
+                }
+            }
+
+
 
 
 
@@ -1203,7 +1234,16 @@ public class ReadPDFToExcel {
 
     }
 
+    /**
+     * copy srcCell sang destCell, nếu cell là công thức sẽ update công thức
+     * @param srcCell cell gốc
+     * @param destCell cell cần set giá trị copy từ cell gốc
+     * @param shiftColumns
+     */
     private static void copyCellWithFormulaUpdate(Cell srcCell, Cell destCell, int shiftColumns) {
+        if (srcCell == null || destCell == null) {
+            return;
+        }
         destCell.setCellStyle(srcCell.getCellStyle());
         switch (srcCell.getCellType()) {
             case STRING:
@@ -1217,9 +1257,39 @@ public class ReadPDFToExcel {
                 break;
             case FORMULA:
                 String formula = srcCell.getCellFormula();
-                String updatedFormula = updateFormula(formula, shiftColumns, srcCell.getRowIndex());
-                updatedFormula = updatedFormula.replaceAll("SUN", "SUM");
-                destCell.setCellFormula(updatedFormula);
+                StringBuilder updatedFormula = new StringBuilder(updateFormula(formula, shiftColumns, srcCell.getRowIndex()));
+                updatedFormula = new StringBuilder(updatedFormula.toString().replaceAll("SUN", "SUM"));
+
+                char[] formulaArr = formula.toCharArray();
+                char[] updatedFormulaArr = updatedFormula.toString().toCharArray();
+
+                // đổi công thức cũ và mới sang dạng list rồi thêm khóa của công thức cũ sang các vị trí tương tự ở công thức mới
+                List<String> formulaList = new ArrayList<>();
+                List<String> updatedFormulaList = new ArrayList<>();
+
+                // Duyệt qua từng ký tự trong chuỗi và thêm vào danh sách
+                for (char ch : formulaArr) {
+                    formulaList.add(String.valueOf(ch));
+                }
+
+                // Duyệt qua từng ký tự trong chuỗi và thêm vào danh sách
+                for (char ch : updatedFormulaArr) {
+                    updatedFormulaList.add(String.valueOf(ch));
+                }
+
+                for (int i = 0; i < formulaList.size(); i++) {
+                    String old = formulaList.get(i);
+                    if (old.equalsIgnoreCase("$")) {
+                        updatedFormulaList.add(i, "$");
+                    }
+                }
+
+                updatedFormula = new StringBuilder();
+                for (String s : updatedFormulaList) {
+                    updatedFormula.append(s);
+                }
+
+                destCell.setCellFormula(updatedFormula.toString());
                 break;
             case BLANK:
                 destCell.setBlank();
@@ -1234,24 +1304,30 @@ public class ReadPDFToExcel {
         int length = formula.length();
 
         for (int i = 0; i < length; i++) {
+            // lấy chữ cái tại vị trí i
             char c = formula.charAt(i);
+            // nếu là chữ thông thương và ký tự khóa công thức $
             if (Character.isLetter(c) || c == '$') {
+
                 StringBuilder reference = new StringBuilder();
                 boolean isColumnAbsolute = false;
                 boolean isRowAbsolute = false;
 
+
                 if (c == '$') {
-                    isColumnAbsolute = true;
+                    isColumnAbsolute = true;// khóa cột
                     reference.append(c);
                     i++;
                     c = formula.charAt(i);
                 }
 
+                // lấy các chữ cái đằng sau ký tự khóa $ và tăng i đến khi hết kí tự tức là hết tham chiếu đến 1 cell
                 while (i < length && Character.isLetter(formula.charAt(i))) {
                     reference.append(formula.charAt(i));
                     i++;
                 }
 
+                // nếu tiếp tục còn khóa thì là khóa hàng
                 if (i < length && formula.charAt(i) == '$') {
                     isRowAbsolute = true;
                     reference.append(formula.charAt(i));
@@ -1302,6 +1378,84 @@ public class ReadPDFToExcel {
             index = index / 26 - 1;
         }
         return column.toString();
+    }
+
+
+    private static void copyRowCellWithFormulaUpdate(Cell srcCell, Cell destCell, int shiftRows) {
+        destCell.setCellStyle(srcCell.getCellStyle());
+        switch (srcCell.getCellType()) {
+            case STRING:
+                destCell.setCellValue(srcCell.getStringCellValue());
+                break;
+            case NUMERIC:
+                destCell.setCellValue(srcCell.getNumericCellValue());
+                break;
+            case BOOLEAN:
+                destCell.setCellValue(srcCell.getBooleanCellValue());
+                break;
+            case FORMULA:
+                String formula = srcCell.getCellFormula();
+                StringBuilder updatedFormula = new StringBuilder(updateRowFormula(formula, shiftRows));
+                updatedFormula = new StringBuilder(updatedFormula.toString().replaceAll("SUN", "SUM"));
+
+
+                destCell.setCellFormula(updatedFormula.toString());
+                break;
+            case BLANK:
+                destCell.setBlank();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private static String updateRowFormula(String formula, int shiftRows) {
+        StringBuilder updatedFormula = new StringBuilder();
+        int length = formula.length();
+        boolean isAbsoluteColumn = false;
+        boolean isAbsoluteRow = false;
+
+        for (int i = 0; i < length; i++) {
+            char c = formula.charAt(i);
+            if (c == '$') {
+                if (i + 1 < length && Character.isLetter(formula.charAt(i + 1))) {
+                    isAbsoluteColumn = true;
+                    updatedFormula.append(c);
+                } else if (i + 1 < length && Character.isDigit(formula.charAt(i + 1))) {
+                    isAbsoluteRow = true;
+                    updatedFormula.append(c);
+                }
+            } else if (Character.isLetter(c)) {
+                StringBuilder column = new StringBuilder();
+                while (i < length && Character.isLetter(formula.charAt(i))) {
+                    column.append(formula.charAt(i));
+                    i++;
+                }
+                if (isAbsoluteColumn) {
+                    updatedFormula.append(column.toString());
+                } else {
+                    updatedFormula.append(column.toString());
+                }
+                isAbsoluteColumn = false;
+                i--; // Adjust for the increment in the loop
+            } else if (Character.isDigit(c)) {
+                StringBuilder row = new StringBuilder();
+                while (i < length && Character.isDigit(formula.charAt(i))) {
+                    row.append(formula.charAt(i));
+                    i++;
+                }
+                int rowIndex = Integer.parseInt(row.toString());
+                if (!isAbsoluteRow) {
+                    rowIndex += shiftRows;
+                }
+                updatedFormula.append(rowIndex);
+                isAbsoluteRow = false;
+                i--; // Adjust for the increment in the loop
+            } else {
+                updatedFormula.append(c);
+            }
+        }
+        return updatedFormula.toString();
     }
 
 
