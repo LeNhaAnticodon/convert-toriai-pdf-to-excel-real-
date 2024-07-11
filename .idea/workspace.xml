@@ -6,8 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="5734567a-e4af-4e7b-81ff-9c217d4afa27" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/dao/SetupData.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/dao/SetupData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/sampleFiles/sample files.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/convert_toriai_pdf_to_excel/sampleFiles/sample files.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,7 +45,10 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.ide.settings.web.browsers&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
@@ -120,7 +124,15 @@
       <workItem from="1720430122715" duration="1167000" />
       <workItem from="1720438379324" duration="981000" />
       <workItem from="1720581620818" duration="12000" />
-      <workItem from="1720582608336" duration="1820000" />
+      <workItem from="1720582608336" duration="1879000" />
+      <workItem from="1720608115468" duration="10953000" />
+      <workItem from="1720620146934" duration="58000" />
+      <workItem from="1720620262904" duration="1444000" />
+      <workItem from="1720666800723" duration="5161000" />
+      <workItem from="1720678444618" duration="3653000" />
+      <workItem from="1720684019436" duration="5083000" />
+      <workItem from="1720691328899" duration="1395000" />
+      <workItem from="1720697164282" duration="30000" />
     </task>
     <servers />
   </component>

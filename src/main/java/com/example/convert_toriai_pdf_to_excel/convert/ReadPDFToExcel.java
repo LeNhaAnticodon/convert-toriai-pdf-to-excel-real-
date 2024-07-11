@@ -6,10 +6,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
@@ -25,6 +23,8 @@ import java.util.concurrent.TimeoutException;
 public class ReadPDFToExcel {
 
     private static final Set<Double> seiHinSet = new LinkedHashSet<>();
+    // list chứa danh sách các sản phẩm không trùng lặp
+    ObservableList<Double> seiHinList = FXCollections.observableArrayList(seiHinSet);
     // time tháng và ngày
     private static String shortNouKi = "";
     // 備考
@@ -233,10 +233,12 @@ public class ReadPDFToExcel {
         kyakuSakiMei = extractValue(header, "客先名[", "]");
         String names = extractValue(header, "工事名[", "]");
         String[] namesArr = names.split("\\+");
-        if (namesArr.length ==  3) {
+        if (namesArr.length == 3) {
             fileExcelName = namesArr[0];
             chuyuBan = namesArr[1];
             teiHaiSha = namesArr[2];
+        } else {
+            fileExcelName = names;
         }
 
         System.out.println(shortNouKi + " : " + bikou + " : " + kyakuSakiMei + " : " + chuyuBan + " : " + teiHaiSha);
@@ -314,10 +316,6 @@ public class ReadPDFToExcel {
      */
     private static Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> getToriaiData(String[] kakuKakou) throws TimeoutException {
         rowToriAiNum = 0;
-
-        // list chứa danh sách các sản phẩm không trùng lặp
-        ObservableList<Double> seiHinList = FXCollections.observableArrayList(seiHinSet);
-
         // tạo map
         Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs = new LinkedHashMap<>();
 
@@ -348,11 +346,12 @@ public class ReadPDFToExcel {
             for (String line : kaKouLines) {
                 // nếu dòng có 鋼材長 và 本数 thì là dòng chứa bozai
                 // lấy bozai và số lượng thêm vào map
+                // mẫu định dạng "#.##". Mẫu này chỉ hiển thị phần thập phân nếu có, và tối đa là 2 chữ số thập phân.
+                DecimalFormat df = new DecimalFormat("#.##");
                 if (line.contains("鋼材長:") && line.contains("本数:")) {
                     String kouZaiChou = extractValue(line, "鋼材長:", "mm").trim();
                     String honSuu = extractValue(line, "本数:", " ").split(" ")[0].trim();
-                    // mẫu định dạng "#.##". Mẫu này chỉ hiển thị phần thập phân nếu có, và tối đa là 2 chữ số thập phân.
-                    DecimalFormat df = new DecimalFormat("#.##");
+
                     kouZaiChouPairs.put(new StringBuilder().append(df.format(Double.parseDouble(kouZaiChou))), convertStringToIntAndMul(honSuu, 1));
                 }
 
@@ -377,9 +376,11 @@ public class ReadPDFToExcel {
                     // lấy vùng chứa chiều dài là vùng cuối cùng trong mảng tên
                     String length = meiSyouLengths[meiSyouLengths.length - 1].trim();
 
+                    double dLength = Double.parseDouble(length);
+                    seiHinSet.add(dLength);
 
-                    // thêm tên và chiều dài vào mảng với chiều dài x 100
-                    StringBuilder[] nameAndLength = {new StringBuilder().append(name), new StringBuilder().append(length)};
+                    // thêm tên và chiều dài vào mảng, tên với ứng dụng này thì không cần
+                    StringBuilder[] nameAndLength = {new StringBuilder(), new StringBuilder().append(df.format(dLength))};
 
                     // lấy số lượng sản phẩm
                     String meiSyouHonSuu = extractValue(line, "mm x", "本").trim();
@@ -391,6 +392,21 @@ public class ReadPDFToExcel {
             // thêm 2 map chứa thông tin vật liệu vào map gốc
             kaKouPairs.put(kouZaiChouPairs, meiSyouPairs);
         }
+
+        // xắp xếp lại seiHinSet
+        // Convert LinkedHashSet to an ArrayList
+        ArrayList<Double> array = new ArrayList<>(seiHinSet);
+        // sort ArrayList
+        Collections.sort(array);
+        // xóa các phần tử của set và thêm lại bằng ArrayList đã xắp xếp
+        seiHinSet.clear();
+        seiHinSet.addAll(array);
+
+//        System.out.println("số sản phẩm trong set: " + seiHinSet.size());
+//        seiHinSet.forEach(aDouble -> {
+//            System.out.println("num: " + aDouble);
+//        });
+
 
         // in thông tin vật liệu
         kaKouPairs.forEach((kouZaiChouPairs, meiSyouPairs) -> {
@@ -1055,6 +1071,53 @@ public class ReadPDFToExcel {
             // Ghi teiHaiSha vào ô O14
             sheet.getRow(1).getCell(14).setCellValue(teiHaiSha);
 
+            int soBoZai = kaKouPairs.size();
+            int soSanPham = seiHinSet.size();
+
+            if (soBoZai > 15) {
+
+            }
+
+
+            sheet.shiftColumns(4, sheet.getLastRowNum(), 1);
+            sheet.shiftColumns(4 + 23, sheet.getLastRowNum(), 1);
+            sheet.shiftColumns(4 + 41, sheet.getLastRowNum(), 1);
+
+            for (int i = 0; i < 3; i++) {
+                Row row = sheet.getRow(i);
+                row.shiftCellsLeft(5, row.getLastCellNum(), 1);
+            }
+
+            for (int i = 26 + 0; i <= 41 + 0; i++) {
+                Row row = sheet.getRow(6);
+                Cell cell = row.getCell(i);
+
+                if (cell != null && cell.getCellType() == CellType.FORMULA) {
+                    String formula = cell.getCellFormula();
+                    formula = formula.replaceAll("L", "K");
+                    cell.setCellFormula(formula);
+                }
+            }
+
+            Cell srcCell;
+            Cell destCell;
+            for (int i = 3; i <= 9; i++) {
+                Row row = sheet.getRow(i);
+                // Sao chép ô từ cột srcColumn sang destColumn
+                srcCell = row.getCell(3);
+                destCell = row.createCell(4);
+                copyCellWithFormulaUpdate(srcCell, destCell, 1);
+            }
+
+            Row row7Formula = sheet.getRow(6);
+            srcCell = row7Formula.getCell(26);
+            destCell = row7Formula.createCell(27);
+            copyCellWithFormulaUpdate(srcCell, destCell, 1);
+
+            srcCell = row7Formula.getCell(44);
+            destCell = row7Formula.createCell(45);
+            copyCellWithFormulaUpdate(srcCell, destCell, 1);
+
 
 
             /*
@@ -1138,6 +1201,107 @@ public class ReadPDFToExcel {
 //        System.out.println("tong chieu dai san pham " + seiHinChouGoukei);
         csvFileNames.add(new CsvFile("Sheet " + sheetIndex + ": " + kouSyu, kouSyuName, 0, 0));
 
+    }
+
+    private static void copyCellWithFormulaUpdate(Cell srcCell, Cell destCell, int shiftColumns) {
+        destCell.setCellStyle(srcCell.getCellStyle());
+        switch (srcCell.getCellType()) {
+            case STRING:
+                destCell.setCellValue(srcCell.getStringCellValue());
+                break;
+            case NUMERIC:
+                destCell.setCellValue(srcCell.getNumericCellValue());
+                break;
+            case BOOLEAN:
+                destCell.setCellValue(srcCell.getBooleanCellValue());
+                break;
+            case FORMULA:
+                String formula = srcCell.getCellFormula();
+                String updatedFormula = updateFormula(formula, shiftColumns, srcCell.getRowIndex());
+                updatedFormula = updatedFormula.replaceAll("SUN", "SUM");
+                destCell.setCellFormula(updatedFormula);
+                break;
+            case BLANK:
+                destCell.setBlank();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private static String updateFormula(String formula, int shiftColumns, int rowIndex) {
+        StringBuilder updatedFormula = new StringBuilder();
+        int length = formula.length();
+
+        for (int i = 0; i < length; i++) {
+            char c = formula.charAt(i);
+            if (Character.isLetter(c) || c == '$') {
+                StringBuilder reference = new StringBuilder();
+                boolean isColumnAbsolute = false;
+                boolean isRowAbsolute = false;
+
+                if (c == '$') {
+                    isColumnAbsolute = true;
+                    reference.append(c);
+                    i++;
+                    c = formula.charAt(i);
+                }
+
+                while (i < length && Character.isLetter(formula.charAt(i))) {
+                    reference.append(formula.charAt(i));
+                    i++;
+                }
+
+                if (i < length && formula.charAt(i) == '$') {
+                    isRowAbsolute = true;
+                    reference.append(formula.charAt(i));
+                    i++;
+                }
+
+                while (i < length && Character.isDigit(formula.charAt(i))) {
+                    reference.append(formula.charAt(i));
+                    i++;
+                }
+
+                String column = reference.toString().replaceAll("[^A-Z]", "");
+                String row = reference.toString().replaceAll("[^0-9]", "");
+
+                if (!isColumnAbsolute) {
+                    int columnIndex = columnToIndex(column) + shiftColumns;
+                    updatedFormula.append(indexToColumn(columnIndex));
+                } else {
+                    updatedFormula.append(column);
+                }
+
+                if (!isRowAbsolute && !row.isEmpty()) {
+                    updatedFormula.append(row);
+                } else {
+                    updatedFormula.append(row);
+                }
+
+                i--; // Adjust for the increment in the loop
+            } else {
+                updatedFormula.append(c);
+            }
+        }
+        return updatedFormula.toString();
+    }
+
+    private static int columnToIndex(String column) {
+        int index = 0;
+        for (int i = 0; i < column.length(); i++) {
+            index = index * 26 + (column.charAt(i) - 'A' + 1);
+        }
+        return index - 1;
+    }
+
+    private static String indexToColumn(int index) {
+        StringBuilder column = new StringBuilder();
+        while (index >= 0) {
+            column.insert(0, (char) ('A' + (index % 26)));
+            index = index / 26 - 1;
+        }
+        return column.toString();
     }
 
 
