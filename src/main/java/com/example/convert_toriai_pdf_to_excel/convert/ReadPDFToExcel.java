@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
@@ -151,6 +152,7 @@ public class ReadPDFToExcel {
             Files.copy(sourceFile, copyFile);
         } catch (IOException e) {
             e.printStackTrace();
+            throw new FileNotFoundException();
         }
         // thêm tên file vào list các sheet của file để hiển thị tên file
         csvFileNames.add(new CsvFile("EXCEL: " + fileExcelName + ".xlsx", "", 0, 0));
@@ -191,7 +193,8 @@ public class ReadPDFToExcel {
         try (FileInputStream fileExcel = new FileInputStream(excelPath)) {
             Workbook workbook = new XSSFWorkbook(fileExcel);
 
-//            workbook.removeSheetAt(0);
+            // ẩn sheet mẫu
+            workbook.removeSheetAt(0);
 
             // Yêu cầu Excel tính toán lại tất cả các công thức khi tệp được mở
             ((XSSFWorkbook) workbook).setForceFormulaRecalculation(true);
@@ -1316,7 +1319,7 @@ public class ReadPDFToExcel {
                 }
             }*/
 
-            Sheet sheet0 = workbook.getSheetAt(0);
+/*            Sheet sheet0 = workbook.getSheetAt(0);
 
 
             sheet.removeRow(sheet.getRow(0));
@@ -1325,7 +1328,7 @@ public class ReadPDFToExcel {
 
             sheet.createRow(0);
             sheet.createRow(1);
-            sheet.createRow(2);
+            sheet.createRow(2);*/
 
 //            for (int i = 0; i < 2; i++) {
 //                // Sao chép từng cell từ hàng nguồn sang hàng đích
@@ -1353,6 +1356,27 @@ public class ReadPDFToExcel {
 //                    }
 //                }
 //            }
+
+            int numColHide;
+            if (soBoZai < 15) {
+                numColHide = 15;
+            } else {
+                numColHide = soBoZai;
+            }
+            for (int i = numColHide + 8; i < sheet.getRow(6).getLastCellNum(); i++) {
+                sheet.setColumnHidden(i, true);
+            }
+            CellRangeAddress cellRangeAddress = new CellRangeAddress(0, 0, 6, 8);
+            sheet.addMergedRegion(cellRangeAddress);
+
+            cellRangeAddress = new CellRangeAddress(0, 0, 12, 14);
+            sheet.addMergedRegion(cellRangeAddress);
+
+            cellRangeAddress = new CellRangeAddress(1, 1, 2, 4);
+            sheet.addMergedRegion(cellRangeAddress);
+
+            cellRangeAddress = new CellRangeAddress(1, 1, 8, 10);
+            sheet.addMergedRegion(cellRangeAddress);
 
             // Khóa sheet với mật khẩu
             sheet.protectSheet("");
