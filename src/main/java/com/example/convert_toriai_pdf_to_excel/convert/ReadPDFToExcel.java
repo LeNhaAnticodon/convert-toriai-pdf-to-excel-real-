@@ -65,8 +65,6 @@ public class ReadPDFToExcel {
     private static String chuyuBan = "";
     private static String teiHaiSha = "";
     private static String tanZyuu;
-    private static List<Double> listBoZai = new ArrayList<>();
-    private static List<Double> listSeiHin = new ArrayList<>();
 
     /**
      * chuyển đổi pdf tính vật liệu thành các file chl theo từng vật liệu khác nhau
@@ -314,6 +312,9 @@ public class ReadPDFToExcel {
      * còn value của kaKouPairs cũng là map chứa các cặp key là mảng 2 phần tử gồm tên và chiều dài sản phẩm, value là số lượng sản phẩm
      */
     private static Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> getToriaiData(String[] kakuKakou) throws TimeoutException {
+        //reset lại map
+        seiHinMap.clear();
+
         rowToriAiNum = 0;
         // tạo map
         Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs = new LinkedHashMap<>();
@@ -346,12 +347,13 @@ public class ReadPDFToExcel {
                 // nếu dòng có 鋼材長 và 本数 thì là dòng chứa bozai
                 // lấy bozai và số lượng thêm vào map
                 // mẫu định dạng "#.##". Mẫu này chỉ hiển thị phần thập phân nếu có, và tối đa là 2 chữ số thập phân.
+
                 DecimalFormat df = new DecimalFormat("#.##");
                 if (line.contains("鋼材長:") && line.contains("本数:")) {
                     String kouZaiChou = extractValue(line, "鋼材長:", "mm").trim();
-                    String honSuu = extractValue(line, "本数:", " ").split(" ")[0].trim();
+                    String kouZaiHonSuu = extractValue(line, "本数:", " ").split(" ")[0].trim();
 
-                    kouZaiChouPairs.put(new StringBuilder().append(df.format(Double.parseDouble(kouZaiChou))), convertStringToIntAndMul(honSuu, 1));
+                    kouZaiChouPairs.put(new StringBuilder().append(df.format(Double.parseDouble(kouZaiChou))), convertStringToIntAndMul(kouZaiHonSuu, 1));
                 }
 
                 // nếu dòng chứa 名称 thì là dòng sản phẩm
@@ -383,6 +385,7 @@ public class ReadPDFToExcel {
                     // lấy số lượng sản phẩm
                     String meiSyouHonSuu = extractValue(line, "mm x", "本").trim();
                     int honSuu = convertStringToIntAndMul(meiSyouHonSuu, 1);
+                    int totalHonSuu = Integer.parseInt(extractValue(line, "本(", "本)(").trim());
 
                     // nếu sản phẩm đã có trong map thì lấy số lượng trong map rồi xóa sản phẩm đi rồi thêm lại sản phẩm với
                     // số lượng trong map đã lấy + số lượng hiện tại
@@ -390,9 +393,9 @@ public class ReadPDFToExcel {
                     if (seiHinMap.get(dLength) != null) {
                         int oldNum = seiHinMap.get(dLength);
                         seiHinMap.remove(dLength);
-                        seiHinMap.put(dLength, honSuu + oldNum);
+                        seiHinMap.put(dLength, totalHonSuu + oldNum);
                     } else {
-                        seiHinMap.put(dLength, honSuu);
+                        seiHinMap.put(dLength, totalHonSuu);
                     }
 
                     // thêm cặp tên + chiều dài và số lượng vào map
@@ -1109,7 +1112,7 @@ public class ReadPDFToExcel {
                         row.shiftCellsLeft(5, row.getLastCellNum(), 1);
                     }
 
-                    // sủa lại công thức tất cả các ô có giá trị L về K vì sau khi dịch chuyển 3 hàng tiêu đề về vị trí ban đầu
+                    // sửa lại công thức tất cả các ô có giá trị L về K vì sau khi dịch chuyển 3 hàng tiêu đề về vị trí ban đầu
                     // công thức bị sai
                     for (int i = 26 + j; i <= 41 + 2 * j; i++) {
                         Row row = sheet.getRow(6);
@@ -1117,7 +1120,7 @@ public class ReadPDFToExcel {
 
                         if (cell != null && cell.getCellType() == CellType.FORMULA) {
                             String formula = cell.getCellFormula();
-                            formula = formula.replaceAll("L", "K");
+                            formula = formula.replaceAll("\\$L\\$3", "\\$K\\$3");
                             cell.setCellFormula(formula);
                         }
                     }
@@ -1183,42 +1186,34 @@ public class ReadPDFToExcel {
                 sheet.getRow(i + 6).getCell(1).setCellValue(seiHinMap.get(length));
             }
 
-            int num = 0;
+
+            // ghi bozai và sản phẩm trong bozai
+            int numBozai = 0;
             for (Map.Entry<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> entry : kaKouPairs.entrySet()) {
+
                 Map<StringBuilder, Integer> kouZaiChouPairs = entry.getKey();
                 Map<StringBuilder[], Integer> meiSyouPairs = entry.getValue();
 
-                String keyTemp = "";
-
-                // Ghi dữ liệu từ mapkey vào ô D4
+                // Ghi bozai và số lượng của nó
                 for (Map.Entry<StringBuilder, Integer> kouZaiEntry : kouZaiChouPairs.entrySet()) {
-                    keyTemp = String.valueOf(kouZaiEntry.getKey());
 
-                    sheet.getRow(3).getCell(3 + num).setCellValue(String.valueOf(kouZaiEntry.getKey()));
-                    sheet.getRow(4).getCell(3 + num).setCellValue(String.valueOf(kouZaiEntry.getValue()));
+                    sheet.getRow(3).getCell(3 + numBozai).setCellValue(String.valueOf(kouZaiEntry.getKey()));
+                    sheet.getRow(4).getCell(3 + numBozai).setCellValue(String.valueOf(kouZaiEntry.getValue()));
                 }
 
                 // Ghi dữ liệu từ mapvalue vào ô A4, B4 và các hàng tiếp theo
-                int j = 0;
                 for (Map.Entry<StringBuilder[], Integer> meiSyouEntry : meiSyouPairs.entrySet()) {
-                    if (rowIndex >= 102) break;
                     // chiều dài sản phẩm
-                    String leng = String.valueOf(meiSyouEntry.getKey()[1]);
+                    Double length = Double.valueOf(meiSyouEntry.getKey()[1].toString());
                     // số lượng sản phẩm
                     String num = meiSyouEntry.getValue().toString();
 
-                    Row row = sheet.createRow(rowIndex++);
-                    row.createCell(0).setCellValue(leng);
-                    row.createCell(1).setCellValue(num);
-                    row.createCell(2).setCellValue(String.valueOf(meiSyouEntry.getKey()[0]));
+                    int indexSeiHinRow = seiHinList.indexOf(length) + 6;
 
-                    // cộng thêm vào chiều dài của sản phẩm * số lượng vào tổng
-                    seiHinChouGoukei += Double.parseDouble(leng) * Double.parseDouble(num);
-                    j++;
+                    sheet.getRow(indexSeiHinRow).getCell(3 + numBozai).setCellValue(num);
                 }
-                sheet.getRow(rowIndex - j).createCell(3).setCellValue(keyTemp);
 
-                num++;
+                numBozai++;
             }
 
             /*
