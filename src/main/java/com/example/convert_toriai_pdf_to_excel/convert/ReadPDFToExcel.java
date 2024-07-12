@@ -187,6 +187,30 @@ public class ReadPDFToExcel {
             writeDataToExcelToriai(kaKouPairs, i, csvFileNames);
         }
 
+        // tạo luồng đọc ghi file
+        try (FileInputStream fileExcel = new FileInputStream(excelPath)) {
+            Workbook workbook = new XSSFWorkbook(fileExcel);
+
+//            workbook.removeSheetAt(0);
+
+            // Yêu cầu Excel tính toán lại tất cả các công thức khi tệp được mở
+            ((XSSFWorkbook) workbook).setForceFormulaRecalculation(true);
+            try (FileOutputStream fileOut = new FileOutputStream(excelPath)) {
+                workbook.write(fileOut);
+
+                workbook.close();
+            }
+
+
+        } catch (IOException e) {
+            if (e instanceof FileNotFoundException) {
+                System.out.println("File đang được mở bởi người dùng khác");
+                throw new FileNotFoundException();
+            }
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
+        }
+
     }
 
     /**
@@ -385,6 +409,7 @@ public class ReadPDFToExcel {
                     // lấy số lượng sản phẩm
                     String meiSyouHonSuu = extractValue(line, "mm x", "本").trim();
                     int honSuu = convertStringToIntAndMul(meiSyouHonSuu, 1);
+                    // tổng số lượng sản phẩm trong bozai đang duyệt, nó là số lượng của nó x số lượng bozai
                     int totalHonSuu = Integer.parseInt(extractValue(line, "本(", "本)(").trim());
 
                     // nếu sản phẩm đã có trong map thì lấy số lượng trong map rồi xóa sản phẩm đi rồi thêm lại sản phẩm với
@@ -413,27 +438,13 @@ public class ReadPDFToExcel {
             return o1.compareTo(o2);
         });
 
-        // đoạn này sai
-/*        // xắp xếp lại seiHinSet
-        // Convert LinkedHashSet to an ArrayList
-        ArrayList<Double> array = new ArrayList<>(seiHinMap);
-        // sort ArrayList
-        Collections.sort(array);
-        // xóa các phần tử của set và thêm lại bằng ArrayList đã xắp xếp
-        seiHinMap.clear();
-        seiHinMap.addAll(array);*/
 
-//        System.out.println("số sản phẩm trong set: " + seiHinSet.size());
-//        seiHinSet.forEach(aDouble -> {
-//            System.out.println("num: " + aDouble);
+
+//        // in thông tin vật liệu
+//        kaKouPairs.forEach((kouZaiChouPairs, meiSyouPairs) -> {
+//            kouZaiChouPairs.forEach((key, value) -> System.out.println("\n" + key.toString() + " : " + value));
+//            meiSyouPairs.forEach((key, value) -> System.out.println(key[0].toString() + " " + key[1].toString() + " : " + value));
 //        });
-
-
-        // in thông tin vật liệu
-        kaKouPairs.forEach((kouZaiChouPairs, meiSyouPairs) -> {
-            kouZaiChouPairs.forEach((key, value) -> System.out.println("\n" + key.toString() + " : " + value));
-            meiSyouPairs.forEach((key, value) -> System.out.println(key[0].toString() + " " + key[1].toString() + " : " + value));
-        });
 
         // lặp qua các phần tử của map kaKouPairs để tính số dòng sản phẩm đã lấy được
         for (Map.Entry<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> e : kaKouPairs.entrySet()) {
@@ -1049,6 +1060,10 @@ public class ReadPDFToExcel {
 
     private static void writeDataToExcelToriai(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int sheetIndex, ObservableList<CsvFile> csvFileNames) throws FileNotFoundException {
 
+        // tổng chiều dài các kozai
+        double kouzaiChouGoukei = 0;
+        double seiHinChouGoukei = 0;
+
         // tạo luồng đọc ghi file
         try (FileInputStream file = new FileInputStream(excelPath)) {
             Workbook workbook = new XSSFWorkbook(file);
@@ -1109,7 +1124,7 @@ public class ReadPDFToExcel {
                     // dịch chuyển 3 hàng tiêu đề về vị trí ban đầu sau khi bị dịch chuyển sang phải 1 hàng
                     for (int i = 0; i < 3; i++) {
                         Row row = sheet.getRow(i);
-                        row.shiftCellsLeft(5, row.getLastCellNum(), 1);
+                        row.shiftCellsLeft(5, 10000, 1);
                     }
 
                     // sửa lại công thức tất cả các ô có giá trị L về K vì sau khi dịch chuyển 3 hàng tiêu đề về vị trí ban đầu
@@ -1187,6 +1202,8 @@ public class ReadPDFToExcel {
             }
 
 
+
+
             // ghi bozai và sản phẩm trong bozai
             int numBozai = 0;
             for (Map.Entry<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> entry : kaKouPairs.entrySet()) {
@@ -1199,6 +1216,8 @@ public class ReadPDFToExcel {
 
                     sheet.getRow(3).getCell(3 + numBozai).setCellValue(String.valueOf(kouZaiEntry.getKey()));
                     sheet.getRow(4).getCell(3 + numBozai).setCellValue(String.valueOf(kouZaiEntry.getValue()));
+
+                    kouzaiChouGoukei += Double.parseDouble(String.valueOf(kouZaiEntry.getKey())) * kouZaiEntry.getValue();
                 }
 
                 // Ghi dữ liệu từ mapvalue vào ô A4, B4 và các hàng tiếp theo
@@ -1206,11 +1225,37 @@ public class ReadPDFToExcel {
                     // chiều dài sản phẩm
                     Double length = Double.valueOf(meiSyouEntry.getKey()[1].toString());
                     // số lượng sản phẩm
-                    String num = meiSyouEntry.getValue().toString();
+                    int num = Integer.parseInt(meiSyouEntry.getValue().toString());
 
+                    // hàng chứa sản phẩm, +6 vì cột chứa sản phẩm bắt đầu chứa các sản phẩm từ hàng thứ 6
                     int indexSeiHinRow = seiHinList.indexOf(length) + 6;
 
-                    sheet.getRow(indexSeiHinRow).getCell(3 + numBozai).setCellValue(num);
+                    // lấy cell chứa số lượng của sản phẩm
+                    Cell cellSoLuong = sheet.getRow(indexSeiHinRow).getCell(3 + numBozai);
+
+                    // lấy số lượng cũ của cell
+                    double oldNum = 0d;
+                    // nếu cell có type là số thì nó đã có số lượng từ trước thì gán nó cho số lượng cũ
+                    if (cellSoLuong.getCellType() == CellType.NUMERIC) {
+                        oldNum = cellSoLuong.getNumericCellValue();
+                    }
+
+                    // nếu số lượng cũ > 0 thì ghi giá trị cell với số lượng cũ + số lượng hiện tại
+                    // không thì ghi cell với số lượng hiện tại
+                    if (oldNum > 0d) {
+                        sheet.getRow(indexSeiHinRow).getCell(3 + numBozai).setCellValue(num + oldNum);
+                    } else {
+                        sheet.getRow(indexSeiHinRow).getCell(3 + numBozai).setCellValue(num);
+                    }
+
+                    double totalLength = Double.parseDouble(String.valueOf(meiSyouEntry.getKey()[1])) * Double.parseDouble(meiSyouEntry.getValue().toString());
+                    Cell cellSoLuongBozai = sheet.getRow(4).getCell(3 + numBozai);
+                    if (cellSoLuongBozai.getCellType() == CellType.STRING) {
+                        totalLength *= Double.parseDouble(cellSoLuongBozai.getStringCellValue());
+                    }
+
+                    seiHinChouGoukei += totalLength;
+
                 }
 
                 numBozai++;
@@ -1245,7 +1290,7 @@ public class ReadPDFToExcel {
                     keyTemp = String.valueOf(kouZaiEntry.getKey());
                     valueTemp = kouZaiEntry.getValue();
                     // cộng thêm chiều dài của bozai * số lượng vào tổng
-                    kouzaiChouGoukei += Double.parseDouble(keyTemp) * valueTemp;
+                    kouzaiChouGoukei += Double.parseDouble(String.valueOf(kouZaiEntry.getKey())) * kouZaiEntry.getValue();
                 }
 
                 // Ghi dữ liệu từ mapvalue vào ô A4, B4 và các hàng tiếp theo
@@ -1264,16 +1309,56 @@ public class ReadPDFToExcel {
                         row.createCell(2).setCellValue(String.valueOf(meiSyouEntry.getKey()[0]));
 
                         // cộng thêm vào chiều dài của sản phẩm * số lượng vào tổng
-                        seiHinChouGoukei += Double.parseDouble(leng) * Double.parseDouble(num);
+                        seiHinChouGoukei += Double.parseDouble(String.valueOf(meiSyouEntry.getKey()[1]);) * Double.parseDouble(meiSyouEntry.getValue().toString());
                         j++;
                     }
                     sheet.getRow(rowIndex - j).createCell(3).setCellValue(keyTemp);
                 }
             }*/
 
+            Sheet sheet0 = workbook.getSheetAt(0);
+
+
+            sheet.removeRow(sheet.getRow(0));
+            sheet.removeRow(sheet.getRow(1));
+            sheet.removeRow(sheet.getRow(2));
+
+            sheet.createRow(0);
+            sheet.createRow(1);
+            sheet.createRow(2);
+
+//            for (int i = 0; i < 2; i++) {
+//                // Sao chép từng cell từ hàng nguồn sang hàng đích
+//                Row srcRow = sheet0.getRow(i);
+//                Row destRow = sheet.getRow(i);
+//
+//                for (int j = 0; j < srcRow.getLastCellNum(); j++) {
+//                    Cell srcCell = srcRow.getCell(i);
+//                    Cell destCell = destRow.createCell(i);
+//
+//                    if (srcCell != null) {
+//                        destCell.setCellStyle(srcCell.getCellStyle());
+//                        switch (srcCell.getCellType()) {
+//                            case STRING -> destCell.setCellValue(srcCell.getStringCellValue());
+//                            case NUMERIC -> destCell.setCellValue(srcCell.getNumericCellValue());
+//                            case BOOLEAN -> destCell.setCellValue(srcCell.getBooleanCellValue());
+//                            case FORMULA -> {
+//                                String formula = srcCell.getCellFormula();
+//                                destCell.setCellFormula(formula);
+//                            }
+//                            case BLANK -> destCell.setBlank();
+//                            default -> {
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
             // Khóa sheet với mật khẩu
             sheet.protectSheet("");
+
+            // Yêu cầu Excel tính toán lại tất cả các công thức khi tệp được mở
+            ((XSSFWorkbook) workbook).setForceFormulaRecalculation(true);
             try (FileOutputStream fileOut = new FileOutputStream(excelPath)) {
                 workbook.write(fileOut);
 
@@ -1293,7 +1378,7 @@ public class ReadPDFToExcel {
 
 //        System.out.println("tong chieu dai bozai " + kouzaiChouGoukei);
 //        System.out.println("tong chieu dai san pham " + seiHinChouGoukei);
-        csvFileNames.add(new CsvFile("Sheet " + sheetIndex + ": " + kouSyu, kouSyuName, 0, 0));
+        csvFileNames.add(new CsvFile("Sheet " + sheetIndex + ": " + kouSyu, kouSyuName, kouzaiChouGoukei, seiHinChouGoukei));
 
     }
 

@@ -867,7 +867,7 @@ public class ConVertPdfToExcelCHLController implements Initializable {
                             // lấy tổng chiều dài bozai, tính theo m lên / 1000
                             double kouzaiChouGoukei = csvFile.getKouzaiChouGoukei() / 1000;
                             // lấy tổng chiều dài sản phẩm, tính theo m nên / 1000 và do chiều dài bị x100 trước nên cần / 100
-                            double seiHinChouGoukei = (csvFile.getSeiHinChouGoukei() / 100) / 1000;
+                            double seiHinChouGoukei = (csvFile.getSeiHinChouGoukei()) / 1000;
 
                             // tạo đối tượng fomat số theo định dạng Nhật
                             NumberFormat numberFormat = NumberFormat.getInstance(new Locale("ja", "JA"));
