@@ -21,9 +21,9 @@ import java.util.concurrent.TimeoutException;
 
 public class ReadPDFToExcel {
 
-    private static final Set<Double> seiHinSet = new LinkedHashSet<>();
+    private static final Map<Double, Integer> seiHinMap = new LinkedHashMap<>();
     // list chứa danh sách các sản phẩm không trùng lặp
-    ObservableList<Double> seiHinList = FXCollections.observableArrayList(seiHinSet);
+    private static ObservableList<Double> seiHinList = FXCollections.observableArrayList();
     // time tháng và ngày
     private static String shortNouKi = "";
     // 備考
@@ -375,16 +375,28 @@ public class ReadPDFToExcel {
                     // lấy vùng chứa chiều dài là vùng cuối cùng trong mảng tên
                     String length = meiSyouLengths[meiSyouLengths.length - 1].trim();
 
-                    double dLength = Double.parseDouble(length);
-                    seiHinSet.add(dLength);
+                    Double dLength = Double.parseDouble(length);
 
                     // thêm tên và chiều dài vào mảng, tên với ứng dụng này thì không cần
                     StringBuilder[] nameAndLength = {new StringBuilder(), new StringBuilder().append(df.format(dLength))};
 
                     // lấy số lượng sản phẩm
                     String meiSyouHonSuu = extractValue(line, "mm x", "本").trim();
+                    int honSuu = convertStringToIntAndMul(meiSyouHonSuu, 1);
+
+                    // nếu sản phẩm đã có trong map thì lấy số lượng trong map rồi xóa sản phẩm đi rồi thêm lại sản phẩm với
+                    // số lượng trong map đã lấy + số lượng hiện tại
+                    // nếu chưa có trong map thì thêm sản phẩm với số lượng hiện tại
+                    if (seiHinMap.get(dLength) != null) {
+                        int oldNum = seiHinMap.get(dLength);
+                        seiHinMap.remove(dLength);
+                        seiHinMap.put(dLength, honSuu + oldNum);
+                    } else {
+                        seiHinMap.put(dLength, honSuu);
+                    }
+
                     // thêm cặp tên + chiều dài và số lượng vào map
-                    meiSyouPairs.put(nameAndLength, convertStringToIntAndMul(meiSyouHonSuu, 1));
+                    meiSyouPairs.put(nameAndLength, honSuu);
                 }
             }
 
@@ -392,14 +404,21 @@ public class ReadPDFToExcel {
             kaKouPairs.put(kouZaiChouPairs, meiSyouPairs);
         }
 
-        // xắp xếp lại seiHinSet
+        // cho các key của map đã lấy được vào list và xắp xếp nó để list sẽ hiển thị trong excel
+        seiHinList.setAll(seiHinMap.keySet());
+        seiHinList.sort((o1, o2) -> {
+            return o1.compareTo(o2);
+        });
+
+        // đoạn này sai
+/*        // xắp xếp lại seiHinSet
         // Convert LinkedHashSet to an ArrayList
-        ArrayList<Double> array = new ArrayList<>(seiHinSet);
+        ArrayList<Double> array = new ArrayList<>(seiHinMap);
         // sort ArrayList
         Collections.sort(array);
         // xóa các phần tử của set và thêm lại bằng ArrayList đã xắp xếp
-        seiHinSet.clear();
-        seiHinSet.addAll(array);
+        seiHinMap.clear();
+        seiHinMap.addAll(array);*/
 
 //        System.out.println("số sản phẩm trong set: " + seiHinSet.size());
 //        seiHinSet.forEach(aDouble -> {
@@ -1070,86 +1089,137 @@ public class ReadPDFToExcel {
             // Ghi teiHaiSha vào ô O14
             sheet.getRow(1).getCell(14).setCellValue(teiHaiSha);
 
+            // lấy số loại bozai và sản phẩm
             int soBoZai = kaKouPairs.size();
-            int soSanPham = seiHinSet.size();
+            int soSanPham = seiHinList.size();
 
+            // nếu số bozai nhiều hơn 15 bao nhiêu thì thêm số cột bozai với số lượng đó
             if (soBoZai > 15) {
 
-            }
+                // thêm j lần các cột mới tại các cột công thức
+                for (int j = 0; j < soBoZai - 15; j++) {
+                    sheet.shiftColumns(4, sheet.getRow(6).getLastCellNum(), 1);
+                    sheet.shiftColumns(4 + 23 + j, sheet.getRow(6).getLastCellNum(), 1);
+                    sheet.shiftColumns(4 + 41 + 2 * j, sheet.getRow(6).getLastCellNum(), 1);
+//                System.out.println("last col: " + sheet.getRow(6).getLastCellNum());
 
-            // thêm j lần các cột mới tại các cột công thức
-            for (int j = 0; j < 3; j++) {
-                sheet.shiftColumns(4, 10000, 1);
-                sheet.shiftColumns(4 + 23 + j, 10000, 1);
-                sheet.shiftColumns(4 + 41 + 2 * j, 10000, 1);
-
-                // dịch chuyển 3 hàng tiêu đề về vị trí ban đầu sau khi bị dịch chuyển sang phải 1 hàng
-                for (int i = 0; i < 3; i++) {
-                    Row row = sheet.getRow(i);
-                    row.shiftCellsLeft(5, row.getLastCellNum(), 1);
-                }
-
-                // sủa lại công thức tất cả các ô có giá trị L về K vì sau khi dịch chuyển 3 hàng tiêu đề về vị trí ban đầu
-                // công thức bị sai
-                for (int i = 26 + j; i <= 41 + 2 * j; i++) {
-                    Row row = sheet.getRow(6);
-                    Cell cell = row.getCell(i);
-
-                    if (cell != null && cell.getCellType() == CellType.FORMULA) {
-                        String formula = cell.getCellFormula();
-                        formula = formula.replaceAll("L", "K");
-                        cell.setCellFormula(formula);
+                    // dịch chuyển 3 hàng tiêu đề về vị trí ban đầu sau khi bị dịch chuyển sang phải 1 hàng
+                    for (int i = 0; i < 3; i++) {
+                        Row row = sheet.getRow(i);
+                        row.shiftCellsLeft(5, row.getLastCellNum(), 1);
                     }
-                }
 
-                Cell srcCell;
-                Cell destCell;
+                    // sủa lại công thức tất cả các ô có giá trị L về K vì sau khi dịch chuyển 3 hàng tiêu đề về vị trí ban đầu
+                    // công thức bị sai
+                    for (int i = 26 + j; i <= 41 + 2 * j; i++) {
+                        Row row = sheet.getRow(6);
+                        Cell cell = row.getCell(i);
 
-                // sao chép ô từ cột 3 sang cột 4 từ hàng 3 đến hàng 9
-                for (int i = 3; i <= 9; i++) {
-                    Row row = sheet.getRow(i);
-                    // Sao chép ô từ cột srcColumn sang destColumn
-                    srcCell = row.getCell(3);
-                    destCell = row.createCell(4);
+                        if (cell != null && cell.getCellType() == CellType.FORMULA) {
+                            String formula = cell.getCellFormula();
+                            formula = formula.replaceAll("L", "K");
+                            cell.setCellFormula(formula);
+                        }
+                    }
+
+                    Cell srcCell;
+                    Cell destCell;
+
+                    // sao chép ô từ cột 3 sang cột 4 từ hàng 3 đến hàng 9
+                    for (int i = 3; i <= 9; i++) {
+                        Row row = sheet.getRow(i);
+                        // Sao chép ô từ cột srcColumn sang destColumn
+                        srcCell = row.getCell(3);
+                        destCell = row.createCell(4);
+                        copyCellWithFormulaUpdate(srcCell, destCell, 1);
+                    }
+
+                    // tại hàng 7 copy ô từ cột 26 sang 27
+                    Row row7Formula = sheet.getRow(6);
+                    srcCell = row7Formula.getCell(26 + j);
+                    destCell = row7Formula.createCell(27 + j);
+                    copyCellWithFormulaUpdate(srcCell, destCell, 1);
+
+                    // tại hàng 7 copy ô từ cột 44 sang 45
+                    srcCell = row7Formula.getCell(44 + 2 * j);
+                    destCell = row7Formula.createCell(45 + 2 * j);
+                    copyCellWithFormulaUpdate(srcCell, destCell, 1);
+
+                    // tại hàng 4 copy ô từ cột 44 sang 45
+                    Row row4Formula = sheet.getRow(3);
+                    srcCell = row4Formula.getCell(44 + 2 * j);
+                    destCell = row4Formula.createCell(45 + 2 * j);
                     copyCellWithFormulaUpdate(srcCell, destCell, 1);
                 }
 
-                // tại hàng 7 copy ô từ cột 26 sang 27
-                Row row7Formula = sheet.getRow(6);
-                srcCell = row7Formula.getCell(26 + j);
-                destCell = row7Formula.createCell(27 + j);
-                copyCellWithFormulaUpdate(srcCell, destCell, 1);
-
-                // tại hàng 7 copy ô từ cột 44 sang 45
-                srcCell = row7Formula.getCell(44 + 2 * j);
-                destCell = row7Formula.createCell(45 + 2 * j);
-                copyCellWithFormulaUpdate(srcCell, destCell, 1);
-
-                // tại hàng 4 copy ô từ cột 44 sang 45
-                Row row4Formula = sheet.getRow(3);
-                srcCell = row4Formula.getCell(44 + 2 * j);
-                destCell = row4Formula.createCell(45 + 2 * j);
-                copyCellWithFormulaUpdate(srcCell, destCell, 1);
             }
 
-            sheet.shiftRows(7, sheet.getLastRowNum(), 1);
-            Row srcRow = sheet.getRow(6);
-            Row destRow = sheet.createRow(7);
 
-            // Sao chép từng cell từ hàng nguồn sang hàng đích
-            for (int i = 0; i < srcRow.getLastCellNum(); i++) {
-                Cell sourceCell = srcRow.getCell(i);
-                Cell targetCell = destRow.createCell(i);
+            // nếu số sản phẩm lớn hơn 1 bao nhiêu lần thì thêm số hàng sản phẩm số lần tương tự
+            if (soSanPham > 1) {
+                for (int j = 0; j < soSanPham - 1; j++) {
+                    sheet.shiftRows(7, sheet.getLastRowNum(), 1);
+                    Row srcRow = sheet.getRow(6);
+                    Row destRow = sheet.createRow(7);
 
-                if (sourceCell != null) {
-                    copyRowCellWithFormulaUpdate(sourceCell, targetCell, 1);
-//                    targetCell.setCellValue(sourceCell.toString());
+                    // Sao chép từng cell từ hàng nguồn sang hàng đích
+                    for (int i = 0; i < srcRow.getLastCellNum(); i++) {
+                        Cell sourceCell = srcRow.getCell(i);
+                        Cell targetCell = destRow.createCell(i);
+
+                        if (sourceCell != null) {
+                            copyRowCellWithFormulaUpdate(sourceCell, targetCell, 1);
+                        }
+                    }
                 }
             }
 
+            // ghi tất cả sản phẩm vào excel
+            for (int i = 0; i < soSanPham; i++) {
+                Double length = seiHinList.get(i);
+                // ghi chiều dài sản phẩm
+                sheet.getRow(i + 6).getCell(0).setCellValue(length);
+                // ghi số lượng sản phẩm
+                sheet.getRow(i + 6).getCell(1).setCellValue(seiHinMap.get(length));
+            }
 
+            int num = 0;
+            for (Map.Entry<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> entry : kaKouPairs.entrySet()) {
+                Map<StringBuilder, Integer> kouZaiChouPairs = entry.getKey();
+                Map<StringBuilder[], Integer> meiSyouPairs = entry.getValue();
 
+                String keyTemp = "";
 
+                // Ghi dữ liệu từ mapkey vào ô D4
+                for (Map.Entry<StringBuilder, Integer> kouZaiEntry : kouZaiChouPairs.entrySet()) {
+                    keyTemp = String.valueOf(kouZaiEntry.getKey());
+
+                    sheet.getRow(3).getCell(3 + num).setCellValue(String.valueOf(kouZaiEntry.getKey()));
+                    sheet.getRow(4).getCell(3 + num).setCellValue(String.valueOf(kouZaiEntry.getValue()));
+                }
+
+                // Ghi dữ liệu từ mapvalue vào ô A4, B4 và các hàng tiếp theo
+                int j = 0;
+                for (Map.Entry<StringBuilder[], Integer> meiSyouEntry : meiSyouPairs.entrySet()) {
+                    if (rowIndex >= 102) break;
+                    // chiều dài sản phẩm
+                    String leng = String.valueOf(meiSyouEntry.getKey()[1]);
+                    // số lượng sản phẩm
+                    String num = meiSyouEntry.getValue().toString();
+
+                    Row row = sheet.createRow(rowIndex++);
+                    row.createCell(0).setCellValue(leng);
+                    row.createCell(1).setCellValue(num);
+                    row.createCell(2).setCellValue(String.valueOf(meiSyouEntry.getKey()[0]));
+
+                    // cộng thêm vào chiều dài của sản phẩm * số lượng vào tổng
+                    seiHinChouGoukei += Double.parseDouble(leng) * Double.parseDouble(num);
+                    j++;
+                }
+                sheet.getRow(rowIndex - j).createCell(3).setCellValue(keyTemp);
+
+                num++;
+            }
 
             /*
             // Ghi koSyuNumMark, 1, rowToriAiNum, 1 vào ô A3, B3, C3, D3
@@ -1207,8 +1277,6 @@ public class ReadPDFToExcel {
             }*/
 
 
-
-
             // Khóa sheet với mật khẩu
             sheet.protectSheet("");
             try (FileOutputStream fileOut = new FileOutputStream(excelPath)) {
@@ -1236,8 +1304,9 @@ public class ReadPDFToExcel {
 
     /**
      * copy srcCell sang destCell, nếu cell là công thức sẽ update công thức
-     * @param srcCell cell gốc
-     * @param destCell cell cần set giá trị copy từ cell gốc
+     *
+     * @param srcCell      cell gốc
+     * @param destCell     cell cần set giá trị copy từ cell gốc
      * @param shiftColumns
      */
     private static void copyCellWithFormulaUpdate(Cell srcCell, Cell destCell, int shiftColumns) {
