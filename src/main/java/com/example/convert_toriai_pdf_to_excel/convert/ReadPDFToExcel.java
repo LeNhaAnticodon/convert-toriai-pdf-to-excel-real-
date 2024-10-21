@@ -1213,7 +1213,10 @@ public class ReadPDFToExcel {
 
 
             // ghi bozai và sản phẩm trong bozai
+            // thể hiện index cột bozai đang thực thi
             int numBozai = 0;
+            // lặp qua các cặp tính vật liệu, mỗi cặp gồm bozai-số lượng trong map kouZaiChouPairs(nằm trong map nhưng thực tế nó chỉ có 1 cặp)
+            // và các bộ chiều dài sản phẩm và số lượng trong map meiSyouPairs
             for (Map.Entry<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> entry : kaKouPairs.entrySet()) {
 
                 Map<StringBuilder, Integer> kouZaiChouPairs = entry.getKey();
@@ -1228,7 +1231,8 @@ public class ReadPDFToExcel {
                     kouzaiChouGoukei += Double.parseDouble(String.valueOf(kouZaiEntry.getKey())) * kouZaiEntry.getValue();
                 }
 
-                // Ghi dữ liệu từ mapvalue vào ô A4, B4 và các hàng tiếp theo
+                // lặp qua các chiều dài sản phẩm trong cặp tính vật liệu này và tìm trong hàng có chiều dài sản phẩm
+                // tương ứng trong cột sản phẩm, dóng sang cột bozai đang tạo là tìm được ô cần ghi sô lượng, sau đó ghi cộng dồn số lượng vào ô đó
                 for (Map.Entry<StringBuilder[], Integer> meiSyouEntry : meiSyouPairs.entrySet()) {
                     // chiều dài sản phẩm
                     Double length = Double.valueOf(meiSyouEntry.getKey()[1].toString());
@@ -1256,6 +1260,7 @@ public class ReadPDFToExcel {
                         sheet.getRow(indexSeiHinRow).getCell(3 + numBozai).setCellValue(num);
                     }
 
+                    // thống kê phục vụ cho hiển thị thông tin trên phầm mềm
                     double totalLength = Double.parseDouble(String.valueOf(meiSyouEntry.getKey()[1])) * Double.parseDouble(meiSyouEntry.getValue().toString());
                     Cell cellSoLuongBozai = sheet.getRow(4).getCell(3 + numBozai);
                     if (cellSoLuongBozai.getCellType() == CellType.STRING) {
@@ -1362,15 +1367,21 @@ public class ReadPDFToExcel {
 //                }
 //            }
 
+            // số cột chứa thông tin tính toán tự tạo sẽ ẩn đi khi đã nhập xong tính vật liệu để tránh rối
             int numColHide;
+            // nếu số bozai < 15 thì số cột cần ẩn là 15, nếu không thì số cột ẩn là số bozai
             if (soBoZai < 15) {
                 numColHide = 15;
             } else {
                 numColHide = soBoZai;
             }
+            // ẩn tất cả các cột từ numColHide + 8
             for (int i = numColHide + 8; i < sheet.getRow(6).getLastCellNum(); i++) {
                 sheet.setColumnHidden(i, true);
             }
+
+            // hợp nhất các ô
+            // Xác định vùng cần hợp nhất (từ cột 6 đến cột 8 trên dòng 0)
             CellRangeAddress cellRangeAddress = new CellRangeAddress(0, 0, 6, 8);
             sheet.addMergedRegion(cellRangeAddress);
 
