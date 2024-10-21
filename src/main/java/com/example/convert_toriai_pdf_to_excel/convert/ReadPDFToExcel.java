@@ -1115,6 +1115,7 @@ public class ReadPDFToExcel {
             int soSanPham = seiHinList.size();
 
             // nếu số bozai nhiều hơn 15 bao nhiêu thì thêm số cột bozai với số lượng đó
+            // copy và paste giá trị cho cột mới cho giống giá trị với các cột còn lại
             if (soBoZai > 15) {
 
                 // thêm j lần các cột mới tại các cột công thức
@@ -1146,7 +1147,8 @@ public class ReadPDFToExcel {
                     Cell srcCell;
                     Cell destCell;
 
-                    // sao chép ô từ cột 3 sang cột 4 từ hàng 3 đến hàng 9
+                    // sao chép ô từ cột 3 sang cột 4 từ hàng 3 đến hàng 9 trong 2 cột này
+                    // cần tạo cell ở cột 4 bị phép dịch chuyển cột ở trên thực chất chưa tạo cell mới
                     for (int i = 3; i <= 9; i++) {
                         Row row = sheet.getRow(i);
                         // Sao chép ô từ cột srcColumn sang destColumn
@@ -1179,8 +1181,11 @@ public class ReadPDFToExcel {
             // nếu số sản phẩm lớn hơn 1 bao nhiêu lần thì thêm số hàng sản phẩm số lần tương tự
             if (soSanPham > 1) {
                 for (int j = 0; j < soSanPham - 1; j++) {
+                    // đẩy tất cả các hàng ở dưới hàng index 6 xuống 1 hàng để thừa ra hàng index 7 nhưng nó thực tế vẫn chưa được tạo
+                    // sau đó mới tạo hàng index 7
                     sheet.shiftRows(7, sheet.getLastRowNum(), 1);
                     Row srcRow = sheet.getRow(6);
+                    // tạo hàng index 7
                     Row destRow = sheet.createRow(7);
 
                     // Sao chép từng cell từ hàng nguồn sang hàng đích

@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="5734567a-e4af-4e7b-81ff-9c217d4afa27" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -134,6 +135,13 @@
       <workItem from="1720740542074" duration="18000" />
       <workItem from="1720740619137" duration="19365000" />
       <workItem from="1720764290270" duration="5334000" />
+      <workItem from="1721115287659" duration="324000" />
+      <workItem from="1721444273122" duration="602000" />
+      <workItem from="1724225330211" duration="16000" />
+      <workItem from="1724225361590" duration="2321000" />
+      <workItem from="1724228083604" duration="1118000" />
+      <workItem from="1727857368626" duration="1026000" />
+      <workItem from="1729476662339" duration="3146000" />
     </task>
     <servers />
   </component>
@@ -150,6 +158,17 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java</url>
+          <line>1203</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
