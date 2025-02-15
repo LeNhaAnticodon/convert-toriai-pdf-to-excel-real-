@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="5734567a-e4af-4e7b-81ff-9c217d4afa27" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -141,7 +140,14 @@
       <workItem from="1724225361590" duration="2321000" />
       <workItem from="1724228083604" duration="1118000" />
       <workItem from="1727857368626" duration="1026000" />
-      <workItem from="1729476662339" duration="8733000" />
+      <workItem from="1729476662339" duration="9431000" />
+      <workItem from="1729563866090" duration="1116000" />
+      <workItem from="1729567125644" duration="643000" />
+      <workItem from="1730086897823" duration="1340000" />
+      <workItem from="1730345731051" duration="2012000" />
+      <workItem from="1731910267622" duration="180000" />
+      <workItem from="1736921604987" duration="342000" />
+      <workItem from="1739600222005" duration="1259000" />
     </task>
     <servers />
   </component>
