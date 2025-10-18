@@ -126,6 +126,7 @@ public class ReadPDFToExcel {
             }*/
         }
 
+        // BEGIN
         // đoạn code copy file này khác với app chl vì nó chỉ tạo 1 file nên chỉ chạy 1 lần ở đoạn đầu này
         // tạo path chứa file excel
         // mà không chạy trong vòng lặp bên dưới như trong hàm writeDataToChl
@@ -1134,6 +1135,7 @@ public class ReadPDFToExcel {
                     // sửa lại công thức tất cả các ô có giá trị L về K vì sau khi dịch chuyển 3 hàng tiêu đề về vị trí ban đầu
                     // công thức bị sai
                     for (int i = 26 + j; i <= 41 + 2 * j; i++) {
+                        // row index 6 tức là hàng 7 vì ban đầu chỉ có 1 hàng 7 có công thức do chưa thêm các hàng mới
                         Row row = sheet.getRow(6);
                         Cell cell = row.getCell(i);
 
@@ -1215,8 +1217,8 @@ public class ReadPDFToExcel {
             // ghi bozai và sản phẩm trong bozai
             // thể hiện index cột bozai đang thực thi
             int numBozai = 0;
-            // lặp qua các cặp tính vật liệu, mỗi cặp gồm bozai-số lượng trong map kouZaiChouPairs(nằm trong map nhưng thực tế nó chỉ có 1 cặp)
-            // và các bộ chiều dài sản phẩm và số lượng trong map meiSyouPairs
+            // lặp qua các cặp tính vật liệu, mỗi cặp gồm "bozai-số lượng trong map kouZaiChouPairs(nằm trong map nhưng thực tế nó chỉ có 1 cặp)"
+            // và "các bộ chiều dài sản phẩm và số lượng trong map meiSyouPairs"
             for (Map.Entry<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> entry : kaKouPairs.entrySet()) {
 
                 Map<StringBuilder, Integer> kouZaiChouPairs = entry.getKey();
@@ -1433,6 +1435,7 @@ public class ReadPDFToExcel {
         if (srcCell == null || destCell == null) {
             return;
         }
+        // gán kiểu của cell gốc cho cell mới
         destCell.setCellStyle(srcCell.getCellStyle());
         switch (srcCell.getCellType()) {
             case STRING:
@@ -1452,7 +1455,7 @@ public class ReadPDFToExcel {
                 char[] formulaArr = formula.toCharArray();
                 char[] updatedFormulaArr = updatedFormula.toString().toCharArray();
 
-                // đổi công thức cũ và mới sang dạng list rồi thêm khóa của công thức cũ sang các vị trí tương tự ở công thức mới
+                // đổi công thức cũ và mới sang dạng list rồi thêm khóa $ của công thức cũ sang các vị trí tương tự ở công thức mới
                 List<String> formulaList = new ArrayList<>();
                 List<String> updatedFormulaList = new ArrayList<>();
 

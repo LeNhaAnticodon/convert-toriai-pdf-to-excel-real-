@@ -6,6 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="5734567a-e4af-4e7b-81ff-9c217d4afa27" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,7 +63,7 @@
   <component name="RunManager">
     <configuration name="MainApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.example.convert_toriai_pdf_to_excel.MainApplication" />
-      <module name="convert_toriai_from_PDF_to_CHL" />
+      <module name="convert_toriai_from_PDF_to_excel_chuan" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="com.example.convert_toriai_pdf_to_excel.*" />
@@ -147,7 +149,16 @@
       <workItem from="1730345731051" duration="2012000" />
       <workItem from="1731910267622" duration="180000" />
       <workItem from="1736921604987" duration="342000" />
-      <workItem from="1739600222005" duration="1259000" />
+      <workItem from="1739600222005" duration="2304000" />
+      <workItem from="1739613383344" duration="776000" />
+      <workItem from="1755575222474" duration="6783000" />
+      <workItem from="1758708271859" duration="117000" />
+      <workItem from="1758799031437" duration="2822000" />
+      <workItem from="1758849399379" duration="1882000" />
+      <workItem from="1758853161259" duration="1852000" />
+      <workItem from="1758887622966" duration="598000" />
+      <workItem from="1758943394696" duration="2530000" />
+      <workItem from="1758968356439" duration="1036000" />
     </task>
     <servers />
   </component>
@@ -164,17 +175,6 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java</url>
-          <line>1203</line>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

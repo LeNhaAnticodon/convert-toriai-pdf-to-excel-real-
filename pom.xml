@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.example</groupId>
-    <artifactId>convert_toriai_from_PDF_to_CHL</artifactId>
+    <artifactId>convert_toriai_from_PDF_to_excel_chuan</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>convert toriai from PDF to EXCEL</name>
 
