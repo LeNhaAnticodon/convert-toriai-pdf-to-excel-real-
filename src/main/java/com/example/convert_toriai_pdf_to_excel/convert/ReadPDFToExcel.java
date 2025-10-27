@@ -1,6 +1,6 @@
 package com.example.convert_toriai_pdf_to_excel.convert;
 
-import com.example.convert_toriai_pdf_to_excel.model.CsvFile;
+import com.example.convert_toriai_pdf_to_excel.model.ExcelFile;
 import com.opencsv.CSVWriter;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,6 +11,8 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,7 +42,7 @@ public class ReadPDFToExcel {
     // 切りロス
     private static String kirirosu = "";
 
-    // tên file chl sẽ tạo được ghi trong phần 工事名, chưa bao gồm loại vật liệu
+    // tên file excel sẽ tạo được ghi trong phần 工事名, chưa bao gồm loại vật liệu
     public static String fileExcelName = "name";
 
     // link của file pdf
@@ -71,21 +73,21 @@ public class ReadPDFToExcel {
      * chuyển đổi pdf tính vật liệu thành các file chl theo từng vật liệu khác nhau
      *
      * @param filePDFPath    link file pdf
-     * @param fileChlDirPath link thư mục chứa file chl sẽ tạo
-     * @param csvFileNames   list chứa danh sách các file chl đã tạo
+     * @param fileExcelDirPath link thư mục chứa file chl sẽ tạo
+     * @param excelFileNames   list chứa danh sách các file chl đã tạo
      */
-    public static void convertPDFToExcel(String filePDFPath, String fileChlDirPath, ObservableList<CsvFile> csvFileNames) throws FileNotFoundException, TimeoutException, IOException {
+    public static void convertPDFToExcel(String filePDFPath, String fileExcelDirPath, ObservableList<ExcelFile> excelFileNames) throws FileNotFoundException, TimeoutException, IOException {
         // xóa danh sách cũ trước khi thực hiện, tránh bị ghi chồng lên nhau
-        csvFileNames.clear();
+        excelFileNames.clear();
 
         // lấy địa chỉ file pdf
         pdfPath = filePDFPath;
         // lấy đi chỉ thư mục chứa file excel
 //        csvExcelDirPath = fileCSVDirPath;
         // lấy đi chỉ thư mục chứa file excel csv
-        csvExcelDirPath = fileChlDirPath;
+        csvExcelDirPath = fileExcelDirPath;
         // lấy đi chỉ thư mục chứa chl
-        chlDirPath = fileChlDirPath;
+        chlDirPath = fileExcelDirPath;
 
         // lấy mảng chứa các trang
         String[] kakuKouSyu = getFullToriaiText();
@@ -156,7 +158,7 @@ public class ReadPDFToExcel {
             throw new FileNotFoundException();
         }
         // thêm tên file vào list các sheet của file để hiển thị tên file
-        csvFileNames.add(new CsvFile("EXCEL: " + fileExcelName + ".xlsx", "", 0, 0));
+        excelFileNames.add(new ExcelFile("EXCEL: " + fileExcelName + ".xlsx", "", 0, 0));
 /*        // Đặt quyền chỉ đọc cho file
         File readOnly = new File(excelPath);
         if (readOnly.exists()) {
@@ -183,11 +185,11 @@ public class ReadPDFToExcel {
             // còn value của kaKouPairs cũng là map chứa các cặp key là mảng 2 phần tử gồm tên và chiều dài sản phẩm, value là số lượng sản phẩm
             Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs = getToriaiData(kakuKakou);
 
-//            writeDataToExcel(kaKouPairs, i - 1, csvFileNames);
-//            writeDataToCSV(kaKouPairs, i - 1, csvFileNames);
-            // ghi thông tin vào file định dạng sysc2 là file của chl
-//            writeDataToChl(kaKouPairs, i, csvFileNames);
-            writeDataToExcelToriai(kaKouPairs, i, csvFileNames);
+//            writeDataToExcel(kaKouPairs, i - 1, excelFileNames);
+//            writeDataToCSV(kaKouPairs, i - 1, excelFileNames);
+            // ghi thông tin vào file định dạng .xlsx là file của excel
+//            writeDataToChl(kaKouPairs, i, excelFileNames);
+            writeDataToExcelToriai(kaKouPairs, i, excelFileNames);
         }
 
         // tạo luồng đọc ghi file
@@ -469,23 +471,23 @@ public class ReadPDFToExcel {
             rowToriAiNum += kouZaiNum * meiSyouPairs.size();
         }
 
-        // nếu số dòng lớn hơn 99 th cho bằng 99 rồi ném ngoại lệ timeout để cho chương trình biết rồi hiển thị thông báo
+        /*// nếu số dòng lớn hơn 99 th cho bằng 99 rồi ném ngoại lệ timeout để cho chương trình biết rồi hiển thị thông báo
         if (rowToriAiNum > 99) {
             rowToriAiNum = 99;
             System.out.println("vượt quá 99 hàng");
             // lấy tên file chl trong tiêu đề gắn thêm tên vật liệu + .sysc2 để in ra thông báo
             fileName = fileExcelName + " " + kouSyu + ".sysc2";
             throw new TimeoutException();
-        }
+        }*/
 
         System.out.println(rowToriAiNum);
         System.out.println("\n" + kirirosu);
 
-        // trả về map kết quả để ghi vào file chl sysc2
+        // trả về map kết quả để ghi vào file excel
         return kaKouPairs;
     }
 
-    private static void writeDataToExcel(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int timePlus, ObservableList<CsvFile> csvFileNames) throws FileNotFoundException {
+    private static void writeDataToExcel(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int timePlus, ObservableList<ExcelFile> excelFileNames) throws FileNotFoundException {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Sheet1");
 
@@ -642,11 +644,11 @@ public class ReadPDFToExcel {
 
         System.out.println("tong chieu dai bozai " + kouzaiChouGoukei);
         System.out.println("tong chieu dai san pham " + seiHinChouGoukei);
-        csvFileNames.add(new CsvFile(fileName, kouSyuName, kouzaiChouGoukei, seiHinChouGoukei));
+        excelFileNames.add(new ExcelFile(fileName, kouSyuName, kouzaiChouGoukei, seiHinChouGoukei));
 
     }
 
-    private static void writeDataToCSV(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int timePlus, ObservableList<CsvFile> csvFileNames) throws FileNotFoundException {
+    private static void writeDataToCSV(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int timePlus, ObservableList<ExcelFile> excelFileNames) throws FileNotFoundException {
 
         // Ghi thời gian hiện tại vào dòng đầu tiên
         Date currentDate = new Date();
@@ -804,7 +806,7 @@ public class ReadPDFToExcel {
 
         System.out.println("tong chieu dai bozai " + kouzaiChouGoukei);
         System.out.println("tong chieu dai san pham " + seiHinChouGoukei);
-        csvFileNames.add(new CsvFile(fileName, kouSyuName, kouzaiChouGoukei, seiHinChouGoukei));
+        excelFileNames.add(new ExcelFile(fileName, kouSyuName, kouzaiChouGoukei, seiHinChouGoukei));
 
     }
 
@@ -813,9 +815,9 @@ public class ReadPDFToExcel {
      *
      * @param kaKouPairs   map chứa tính vật liệu
      * @param timePlus     thời gian hoặc chỉ số cộng thêm vào ô time để tránh bị trùng tên  time giữa các file
-     * @param csvFileNames list chứa danh sách các file đã tạo
+     * @param excelFileNames list chứa danh sách các file đã tạo
      */
-    private static void writeDataToChl(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int timePlus, ObservableList<CsvFile> csvFileNames) throws FileNotFoundException {
+    private static void writeDataToChl(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int timePlus, ObservableList<ExcelFile> excelFileNames) throws FileNotFoundException {
 
         // Ghi thời gian hiện tại vào dòng đầu tiên
         Date currentDate = new Date();
@@ -1038,7 +1040,7 @@ public class ReadPDFToExcel {
         System.out.println("tong chieu dai bozai " + kouzaiChouGoukei);
         System.out.println("tong chieu dai san pham " + seiHinChouGoukei);
         // thêm file vào list hiển thị
-        csvFileNames.add(new CsvFile(fileName, kouSyuName, kouzaiChouGoukei, seiHinChouGoukei));
+        excelFileNames.add(new ExcelFile(fileName, kouSyuName, kouzaiChouGoukei, seiHinChouGoukei));
 
     }
 
@@ -1062,7 +1064,7 @@ public class ReadPDFToExcel {
     }
 
 
-    private static void writeDataToExcelToriai(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int sheetIndex, ObservableList<CsvFile> csvFileNames) throws FileNotFoundException {
+    private static void writeDataToExcelToriai(Map<Map<StringBuilder, Integer>, Map<StringBuilder[], Integer>> kaKouPairs, int sheetIndex, ObservableList<ExcelFile> excelFileNames) throws FileNotFoundException {
 
         // tổng chiều dài các kozai
         double kouzaiChouGoukei = 0;
@@ -1420,7 +1422,7 @@ public class ReadPDFToExcel {
 
 //        System.out.println("tong chieu dai bozai " + kouzaiChouGoukei);
 //        System.out.println("tong chieu dai san pham " + seiHinChouGoukei);
-        csvFileNames.add(new CsvFile("Sheet " + sheetIndex + ": " + kouSyu, kouSyuName, kouzaiChouGoukei, seiHinChouGoukei));
+        excelFileNames.add(new ExcelFile("Sheet " + sheetIndex + ": " + kouSyu, kouSyuName, kouzaiChouGoukei, seiHinChouGoukei));
 
     }
 
@@ -1652,23 +1654,27 @@ public class ReadPDFToExcel {
 
 
     /**
-     * chuyển đổi text nhập vào sang số double rồi nhân với hệ số và trả về với kiểu int
+     * chuyển đổi text nhập vào sang số BigDecimal rồi nhân với hệ số và trả về với kiểu int
      *
      * @param textNum    text cần chuyển
      * @param multiplier hệ số
      * @return số int đã nhân với hệ số
      */
-    private static int convertStringToIntAndMul(String textNum, int multiplier) {
-        Double num = null;
+    public static int convertStringToIntAndMul(String textNum, int multiplier) {
+        BigDecimal bigDecimalNum = null;
         try {
-            num = Double.parseDouble(textNum);
+            bigDecimalNum = new BigDecimal(textNum);
+            // nhân số thực num với hệ số truyền vào
+            bigDecimalNum = bigDecimalNum.multiply(new BigDecimal(multiplier));
+
         } catch (NumberFormatException e) {
             System.out.println("Lỗi chuyển đổi chuỗi không phải số thực sang số");
             System.out.println(textNum);
 
         }
-        if (num != null) {
-            return (int) (num * multiplier);
+        if (bigDecimalNum != null) {
+            // Làm tròn đến số nguyên gần nhất
+            return bigDecimalNum.setScale(0, RoundingMode.DOWN).intValueExact();
         }
         return 0;
     }

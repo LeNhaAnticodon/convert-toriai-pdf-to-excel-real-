@@ -1,6 +1,6 @@
 package com.example.convert_toriai_pdf_to_excel.dao;
 
-import com.example.convert_toriai_pdf_to_excel.model.CsvFile;
+import com.example.convert_toriai_pdf_to_excel.model.ExcelFile;
 import com.example.convert_toriai_pdf_to_excel.model.Setup;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,7 +18,7 @@ public class SetupData {
     // tên file lưu cài đặt của chương trình
     private static String FILE_SETUP_NAME = "setup_data.set";
     // list các file đã chuyển sang chl
-    private final ObservableList<CsvFile> csvFiles = FXCollections.observableArrayList();
+    private final ObservableList<ExcelFile> excelFiles = FXCollections.observableArrayList();
     // map chứa key là text của các ngôn ngữ và value là từ khóa của câu đó trong file properties languagesMap
     // từ từ khóa này thêm đuôi ngôn ngữ tương ứng sẽ hiển thị ra câu tương ứng bằng ngôn ngữ đó
     private final Map<String, String> languageMap = new HashMap<>();
@@ -245,8 +245,8 @@ public class SetupData {
     /**
      * @return list chứa các file chl đã tạo
      */
-    public ObservableList<CsvFile> getChlFiles() {
-        return csvFiles;
+    public ObservableList<ExcelFile> getExcelFile() {
+        return excelFiles;
     }
 
     /**

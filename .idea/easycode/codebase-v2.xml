@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="com.obiscr.chatgpt.settings.EasyCodeState">
+    <option name="projectFiles" value="$PROJECT_DIR$/src/main/java/com/example/convert_toriai_pdf_to_excel/convert/ReadPDFToExcel.java;C:/Users/HuanTech PC/IdeaProjects/convert toriai pdf to excel/src/main/java/com/example/convert_toriai_pdf_to_excel/dao/SetupData.java;C:/Users/HuanTech PC/IdeaProjects/convert toriai pdf to excel/src/main/java/com/example/convert_toriai_pdf_to_excel/model/ExcelFile.java;C:/Users/HuanTech PC/IdeaProjects/convert toriai pdf to excel/src/main/java/com/example/convert_toriai_pdf_to_excel/model/Setup.java;C:/Users/HuanTech PC/IdeaProjects/convert toriai pdf to excel/src/main/java/com/example/convert_toriai_pdf_to_excel/AboutController.java;C:/Users/HuanTech PC/IdeaProjects/convert toriai pdf to excel/src/main/java/com/example/convert_toriai_pdf_to_excel/ConVertPdfToExcelCHLController.java;C:/Users/HuanTech PC/IdeaProjects/convert toriai pdf to excel/src/main/java/com/example/convert_toriai_pdf_to_excel/Main.java;C:/Users/HuanTech PC/IdeaProjects/convert toriai pdf to excel/src/main/java/com/example/convert_toriai_pdf_to_excel/MainApplication.java;C:/Users/HuanTech PC/IdeaProjects/convert toriai pdf to excel/src/main/java/module-info.java" />
+  </component>
+</project>
